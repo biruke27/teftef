@@ -14,8 +14,8 @@ Task: M0-T2 — Initialize Node.js + Fastify Backend with /health Route
 - [x] Create src/server.ts with GET /health route
 - [x] Register @fastify/cors before any routes
 - [x] Read PORT from process.env.PORT with fallback to 3000
-- [ ] Push to GitHub, connect to Railway, deploy
-- [ ] curl https://your-railway-url/health → confirm {status:'ok'}
+- [x] Push to GitHub, connect to Railway, deploy
+- [x] curl https://teftef-production.up.railway.app/health → confirm {status:'ok'}
 
 **Next session starts at:**
 - M0-T3: Setup Prisma with User and Job Models
