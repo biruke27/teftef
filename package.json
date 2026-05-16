@@ -1,4 +1,12 @@
 {
+  "name": "teftef",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cd teftef-api && npm install && npm run build",
+    "start": "cd teftef-api && npm start",
+    "dev": "cd teftef-app && npm run dev"
+  },
   "devDependencies": {
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.14",
