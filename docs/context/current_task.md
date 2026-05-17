@@ -11,6 +11,7 @@ Task: M0-T3 — Setup Prisma with User and Job Models
 - [x] Install prisma and @prisma/client
 - [x] Create prisma/schema.prisma with User, Job, Proposal, Transaction models
 - [x] Add Prisma generate to backend build pipeline
+- [x] Create Prisma client helper in teftef-api/src/prisma.ts
 - [x] Validate Prisma schema
 - [ ] Connect a DATABASE_URL and run the first migration
 
