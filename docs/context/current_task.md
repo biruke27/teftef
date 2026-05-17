@@ -13,6 +13,7 @@ Task: M0-T3 — Setup Prisma with User and Job Models
 - [x] Add Prisma generate to backend build pipeline
 - [x] Create Prisma client helper in teftef-api/src/prisma.ts
 - [x] Validate Prisma schema
+- [x] Generate initial migration SQL from schema
 - [ ] Connect a DATABASE_URL and run the first migration
 
 **Next session starts at:**
