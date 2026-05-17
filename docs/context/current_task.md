@@ -1,24 +1,21 @@
 # Current Task
 
 Mission: M0 — The Shell
-Task: M0-T2 — Initialize Node.js + Fastify Backend with /health Route
+Task: M0-T3 — Setup Prisma with User and Job Models
 
-**Goal:** A backend server that responds to GET /health and is accessible from the internet via Railway or Render deployment.
+**Goal:** Add Prisma schema and client support for User, Job, Proposal, and Transaction models; prepare the backend for database migrations.
 
 **Status:** IN_PROGRESS
 
 **Completed today:**
-- [x] mkdir teftef-api && npm init -y
-- [x] npm install fastify @fastify/cors dotenv
-- [x] npm install -D typescript ts-node @types/node
-- [x] Create src/server.ts with GET /health route
-- [x] Register @fastify/cors before any routes
-- [x] Read PORT from process.env.PORT with fallback to 3000
-- [x] Push to GitHub, connect to Railway, deploy
-- [x] curl https://teftef-production.up.railway.app/health → confirm {status:'ok'}
+- [x] Install prisma and @prisma/client
+- [x] Create prisma/schema.prisma with User, Job, Proposal, Transaction models
+- [x] Add Prisma generate to backend build pipeline
+- [x] Validate Prisma schema
+- [ ] Connect a DATABASE_URL and run the first migration
 
 **Next session starts at:**
-- M0-T3: Setup Prisma with User and Job Models
+- M1-T1: Mock job feed / JobCard component
 
 ---
 

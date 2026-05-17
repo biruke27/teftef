@@ -15,7 +15,7 @@
 | Vite + React + Tailwind shell | DONE ✅ | M0-T1 |
 | Telegram SDK connection | DONE ✅ | M0-T1 |
 | Fastify backend + /health | DONE ✅ | M0-T2 |
-| Prisma schema + migrations + indexes | NOT_STARTED | M0-T3 |
+| Prisma schema + migrations + indexes | IN_PROGRESS | M0-T3 |
 
 ## Mission 1: The Job Board
 

@@ -5,17 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "ts-node src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "postinstall": "npm run build",
     "start": "node dist/server.js"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
+    "@prisma/client": "^5.15.0",
     "dotenv": "^16.3.1",
     "fastify": "^4.24.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "prisma": "^5.15.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.5.4"
   }
