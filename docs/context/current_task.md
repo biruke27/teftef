@@ -5,7 +5,7 @@ Task: M0-T3 — Setup Prisma with User and Job Models
 
 **Goal:** Add Prisma schema and client support for User, Job, Proposal, and Transaction models; prepare the backend for database migrations.
 
-**Status:** IN_PROGRESS
+**Status:** DONE ✅
 
 **Completed today:**
 - [x] Install prisma and @prisma/client
@@ -14,7 +14,9 @@ Task: M0-T3 — Setup Prisma with User and Job Models
 - [x] Create Prisma client helper in teftef-api/src/prisma.ts
 - [x] Validate Prisma schema
 - [x] Generate initial migration SQL from schema
-- [ ] Connect a DATABASE_URL and run the first migration
+- [x] Connect a DATABASE_URL and run the first migration
+- [x] Add DATABASE_URL to Railway backend service variables
+- [x] Redeploy backend to Railway — migration applied successfully
 
 **Next session starts at:**
 - M1-T1: Mock job feed / JobCard component
@@ -35,8 +37,8 @@ Task: M0-T3 — Setup Prisma with User and Job Models
 
 **Build sequence:**
 1. [x] Bot opens Mini App shell (M0-T1) ✅ DONE
-2. [→] Backend /health + DB (M0-T2, M0-T3) ← YOU ARE HERE
-3. [ ] Mock job feed (M1-T1, M1-T2)
+2. [x] Backend /health + DB (M0-T2, M0-T3) ✅ DONE
+3. [ ] Mock job feed (M1-T1, M1-T2) ← YOU ARE HERE NEXT
 4. [ ] PostJobView + draft (M1-T3)
 5. [ ] Real backend + DB jobs
 6. [ ] Telegram auth (M2-T1)
