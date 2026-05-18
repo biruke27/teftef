@@ -1,4 +1,4 @@
-import { JobCard } from './components/JobCard';
+import { JobFeedView } from './components/JobFeedView';
 
 // [M0-T1] Telegram Mini App Shell — reads user name from initData
 declare global {
@@ -13,39 +13,6 @@ declare global {
     };
   }
 }
-
-const mockJobs = [
-  {
-    id: 'job-01',
-    title: 'Design a landing page for a local fintech startup',
-    budget: 18000,
-    description:
-      'Create a clean, fast landing page for a digital savings app. Focus on simple copy, strong CTA, and mobile-first layout.',
-    clientName: 'Ethiopia FinTech',
-    status: 'OPEN' as const,
-    postedAt: '2 hours ago',
-  },
-  {
-    id: 'job-02',
-    title: 'Translate product descriptions to Amharic',
-    budget: 7500,
-    description:
-      'Translate 20 short product descriptions into natural Amharic for a new marketplace listing.',
-    clientName: 'Marketplace Team',
-    status: 'IN_PROGRESS' as const,
-    postedAt: 'Today',
-  },
-  {
-    id: 'job-03',
-    title: 'Social media graphic set for small business campaign',
-    budget: 9500,
-    description:
-      'Design 5 branded social graphics for Instagram and Facebook with local market style.',
-    clientName: 'Sheba Creative',
-    status: 'OPEN' as const,
-    postedAt: 'Yesterday',
-  },
-];
 
 function App() {
   window.Telegram?.WebApp?.ready();
@@ -76,19 +43,7 @@ function App() {
           </div>
         </header>
 
-        <section className="grid gap-4 lg:grid-cols-2">
-          {mockJobs.map((job) => (
-            <JobCard
-              key={job.id}
-              title={job.title}
-              budget={job.budget}
-              description={job.description}
-              clientName={job.clientName}
-              status={job.status}
-              postedAt={job.postedAt}
-            />
-          ))}
-        </section>
+        <JobFeedView />
       </div>
     </div>
   );
