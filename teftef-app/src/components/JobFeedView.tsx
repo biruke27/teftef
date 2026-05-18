@@ -1,10 +1,12 @@
 import { JobCard } from './JobCard';
-import { mockJobs } from '../lib/jobs';
+import { useJobs } from '../hooks/useJobs';
 
 export function JobFeedView() {
+  const { data: jobs = [] } = useJobs();
+
   return (
     <section className="grid gap-4 lg:grid-cols-2">
-      {mockJobs.map((job, index) => (
+      {jobs.map((job, index) => (
         <JobCard
           key={`${job.title}-${index}`}
           title={job.title}
