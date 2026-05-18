@@ -21,7 +21,7 @@
 
 | Feature | Status | Mission-Task |
 |---|---|---|
-| JobCard component | NOT_STARTED | M1-T1 |
+| JobCard component | DONE ✅ | M1-T1 |
 | JobFeedView + React Query | NOT_STARTED | M1-T2 |
 | PostJobView + IndexedDB draft | NOT_STARTED | M1-T3 |
 | Backend GET /jobs | NOT_STARTED | M1-T2 |

@@ -1,25 +1,20 @@
 # Current Task
 
-Mission: M0 — The Shell
-Task: M0-T3 — Setup Prisma with User and Job Models
+Mission: M1 — The Job Board
+Task: M1-T1 — Mock job feed / JobCard component
 
-**Goal:** Add Prisma schema and client support for User, Job, Proposal, and Transaction models; prepare the backend for database migrations.
+**Goal:** Build a working mock job feed UI and reusable JobCard component before wiring the feed to the backend.
 
 **Status:** DONE ✅
 
 **Completed today:**
-- [x] Install prisma and @prisma/client
-- [x] Create prisma/schema.prisma with User, Job, Proposal, Transaction models
-- [x] Add Prisma generate to backend build pipeline
-- [x] Create Prisma client helper in teftef-api/src/prisma.ts
-- [x] Validate Prisma schema
-- [x] Generate initial migration SQL from schema
-- [x] Connect a DATABASE_URL and run the first migration
-- [x] Add DATABASE_URL to Railway backend service variables
-- [x] Redeploy backend to Railway — migration applied successfully
+- [x] Create reusable `JobCard` component
+- [x] Add mock job feed data to `App.tsx`
+- [x] Render the job feed in a responsive grid layout
+- [x] Verify frontend build succeeds with the new UI
 
 **Next session starts at:**
-- M1-T1: Mock job feed / JobCard component
+- M1-T2: JobFeedView + React Query
 
 ---
 
@@ -38,9 +33,10 @@ Task: M0-T3 — Setup Prisma with User and Job Models
 **Build sequence:**
 1. [x] Bot opens Mini App shell (M0-T1) ✅ DONE
 2. [x] Backend /health + DB (M0-T2, M0-T3) ✅ DONE
-3. [ ] Mock job feed (M1-T1, M1-T2) ← YOU ARE HERE NEXT
-4. [ ] PostJobView + draft (M1-T3)
-5. [ ] Real backend + DB jobs
+3. [x] Mock job feed (M1-T1) ✅
+4. [ ] JobFeedView + React Query (M1-T2) ← YOU ARE HERE NEXT
+5. [ ] PostJobView + draft (M1-T3)
+6. [ ] Real backend + DB jobs
 6. [ ] Telegram auth (M2-T1)
 7. [ ] Proposals (M3-T1)
 8. [ ] Payment + fallback (M4-T1)
