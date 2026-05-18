@@ -50,7 +50,7 @@ One backend process. No separate services. No microservices. Everything in one F
 
 ---
 
-## East African Reality (design defaults, not edge cases)
+## Ethiopian Reality (design defaults, not edge cases)
 
 - Assume 3G, not WiFi.
 - All images must be SVG. No PNG/WebP in core UI.

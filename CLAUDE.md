@@ -6,7 +6,7 @@
 
 ## 1. WHAT THIS PROJECT IS
 
-A **Telegram Mini App (TMA)** — a freelance marketplace for the Ethiopian/East African market.
+A **Telegram Mini App (TMA)** — a freelance marketplace for the Ethiopian market.
 Built by a **solo developer** using a **small local LLM** as a coding assistant.
 Stack: React + Vite + Tailwind (frontend) · Fastify + TypeScript (backend) · PostgreSQL + Prisma (database) · Railway (hosting).
 
@@ -362,7 +362,7 @@ const botToken = process.env.BOT_MODE === 'PROD'
 
 ---
 
-## 13. EAST AFRICAN DEPLOYMENT CONSTRAINTS
+## 13. ETHIOPIAN DEPLOYMENT CONSTRAINTS
 > These are not edge cases. Design for them as the default.
 
 - Assume 3G, not WiFi. Keep API responses under 10KB for list views.

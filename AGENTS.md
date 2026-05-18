@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-**TefTef** is a Telegram Mini App (TMA) — a freelance marketplace for Ethiopia/East Africa.
+**TefTef** is a Telegram Mini App (TMA) — a freelance marketplace for Ethiopia.
 - **Solo developer** + small local LLM
 - **Stack:** React + Vite + Tailwind (frontend) · Fastify + TypeScript (backend) · PostgreSQL + Prisma (database) · Railway (hosting)
 - **Architecture:** Modular monolith. All decisions optimize for small-context-window LLM productivity.
@@ -196,7 +196,7 @@ Once the project initializes, these files should exist in `docs/context/`:
 
 ---
 
-## 🌍 East African Deployment Constraints
+## 🌍 Ethiopian Deployment Constraints
 
 Design for these as the **default**, not edge cases:
 

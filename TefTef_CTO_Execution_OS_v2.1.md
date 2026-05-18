@@ -1,5 +1,5 @@
 
-**Telegram-First · East African Freelance Marketplace · Solo Dev + Small LLM**
+**Telegram-First · Ethiopian Freelance Marketplace · Solo Dev + Small LLM**
 
 _Battle-tested. Mission-driven. No arbitrary timelines._
 
@@ -92,7 +92,7 @@ We are building a Modular Monolith. This is not a compromise — it is the corre
 
 ## 2.3 Dual-Mode User Architecture
 
-Users are not forced to choose between Client and Freelancer. Every user record has a single account with a role_mode field that can be toggled. The UI shows the relevant view based on this mode. This eliminates onboarding friction and mirrors how real East African freelancers work — they hire and work simultaneously.
+Users are not forced to choose between Client and Freelancer. Every user record has a single account with a role_mode field that can be toggled. The UI shows the relevant view based on this mode. This eliminates onboarding friction and mirrors how real Ethiopian freelancers work — they hire and work simultaneously.
 
 |**DB Field**|**Values**|**UI Effect**|
 |---|---|---|
@@ -750,7 +750,7 @@ The small local LLM has no memory between sessions. Your /docs/context/ folder i
 |---|
 |**RULE: One Thing**<br><br>current_task.md has exactly one task. Not two. Not 'and also.' One.|
 
-# PART 10 — EAST AFRICAN OPERATIONAL REALITY
+# PART 10 — ETHIOPIAN OPERATIONAL REALITY
 
 ## 10.1 Unstable Internet — Design Assumptions
 
@@ -932,7 +932,7 @@ Never build out of this order. Every step produces a working product. No step cr
 
 **TefTef is not a technical problem. It is an execution problem.**
 
-The architecture is defined. The tasks are atomic enough for a 9B model to handle. The order is safe. The fallbacks are built in. The memory system prevents hallucination. The debugging dictionary handles the common failures. The East African deployment reality is accounted for.
+The architecture is defined. The tasks are atomic enough for a 9B model to handle. The order is safe. The fallbacks are built in. The memory system prevents hallucination. The debugging dictionary handles the common failures. The Ethiopian deployment reality is accounted for.
 
 You have one job now: open current_task.md, write 'Mission M0 — Task M0-T1', and initialize the Vite project.
 
@@ -940,4 +940,4 @@ The LLM writes bricks. You lay them. Every session. Every day.
 
 **Now go to Task M0-T1 and initialize the project.**
 
-_TefTef Execution OS — v2.0 — Solo Dev Edition — Telegram-First — East Africa_
+_TefTef Execution OS — v2.0 — Solo Dev Edition — Telegram-First — Ethiopia_

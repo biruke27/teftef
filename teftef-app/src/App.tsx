@@ -66,7 +66,7 @@ function App() {
                 Hello, {name}! 👋
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Browse active jobs posted by East African businesses. This is your first glance at the TefTef job feed.
+                Browse active jobs posted by Ethiopian businesses. This is your first glance at the TefTef job feed.
               </p>
             </div>
             <div className="rounded-3xl bg-slate-50 p-4 text-sm text-slate-600 shadow-inner">
