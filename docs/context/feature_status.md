@@ -23,7 +23,7 @@
 |---|---|---|
 | JobCard component | DONE ✅ | M1-T1 |
 | JobFeedView + React Query | DONE ✅ | M1-T2 |
-| PostJobView + IndexedDB draft | NOT_STARTED | M1-T3 |
+| PostJobView + IndexedDB draft | IN_PROGRESS | M1-T3 |
 | Backend GET /jobs | DONE ✅ | M1-T2 |
 | Backend POST /jobs | DONE ✅ | M1-T3 |
 

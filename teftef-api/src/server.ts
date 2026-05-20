@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import dotenv from 'dotenv';
-import { prisma } from './prisma';
+import { prisma } from './prisma.js';
 
 dotenv.config();
 
@@ -10,6 +10,21 @@ function getTrustTier(score: number) {
   if (score >= 60) return 'Trusted';
   if (score >= 40) return 'Rising';
   return 'New';
+}
+
+function getPostedLabel(createdAt: Date) {
+  const diffMs = Date.now() - createdAt.getTime();
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diffMs < minute) return 'Just now';
+  if (diffMs < hour) return `${Math.floor(diffMs / minute)} minutes ago`;
+  if (diffMs < day) return `${Math.floor(diffMs / hour)} hours ago`;
+  return new Intl.DateTimeFormat('en-ET', {
+    month: 'short',
+    day: 'numeric',
+  }).format(createdAt);
 }
 
 async function start() {
@@ -45,11 +60,11 @@ async function start() {
       jobs: jobs.map((job) => ({
         id: job.id,
         title: job.title,
-        description_preview: job.description.slice(0, 120),
+        description: job.description.slice(0, 160),
         budget: job.budget,
         status: job.status,
         trustTier: getTrustTier(job.client.trust_score),
-        createdAt: job.created_at,
+        postedAt: getPostedLabel(job.created_at),
         proposalCount: job._count.proposals,
         clientName: job.client.username ?? 'Client',
       })),
@@ -63,14 +78,15 @@ async function start() {
       title?: string;
       description?: string;
       budget?: number;
-      clientId?: string;
-      category?: string;
+      telegramId?: string;
+      username?: string;
     };
 
     const title = body.title?.trim() ?? '';
     const description = body.description?.trim() ?? '';
     const budget = Number(body.budget ?? 0);
-    const clientId = body.clientId?.trim();
+    const telegramId = body.telegramId?.trim();
+    const username = body.username?.trim() || undefined;
 
     if (title.length < 5) {
       return reply.status(400).send({ error: 'Title must be at least 5 characters.' });
@@ -84,13 +100,23 @@ async function start() {
       return reply.status(400).send({ error: 'Budget must be greater than 0.' });
     }
 
-    if (!clientId) {
-      return reply.status(400).send({ error: 'clientId is required until auth is implemented.' });
+    if (!telegramId) {
+      return reply.status(400).send({ error: 'Telegram user data is required for job posting.' });
     }
+
+    const client = await prisma.user.upsert({
+      where: { telegramId },
+      update: { username },
+      create: {
+        telegramId,
+        username,
+        role_mode: 'CLIENT',
+      },
+    });
 
     const jobCount = await prisma.job.count({
       where: {
-        clientId,
+        clientId: client.id,
         created_at: {
           gte: new Date(Date.now() - 60 * 60 * 1000),
         },
@@ -101,17 +127,12 @@ async function start() {
       return reply.status(429).send({ error: 'Too many jobs. Maximum 3 jobs per hour.' });
     }
 
-    const existingClient = await prisma.user.findUnique({ where: { id: clientId } });
-    if (!existingClient) {
-      return reply.status(400).send({ error: 'Invalid clientId.' });
-    }
-
     const job = await prisma.job.create({
       data: {
         title,
         description,
         budget,
-        clientId,
+        clientId: client.id,
       },
     });
 

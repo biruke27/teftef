@@ -1,20 +1,23 @@
 # Current Task
 
 Mission: M1 — The Job Board
-Task: M1-T1 — Mock job feed / JobCard component
+Task: M1-T3 — PostJobView + IndexedDB draft
 
-**Goal:** Build a working mock job feed UI and reusable JobCard component before wiring the feed to the backend.
+**Goal:** Build a job posting form with local draft persistence and connect it to the backend job create route.
 
-**Status:** DONE ✅
+**Status:** IN_PROGRESS
 
 **Completed today:**
 - [x] Create reusable `JobCard` component
 - [x] Add mock job feed data to `App.tsx`
 - [x] Render the job feed in a responsive grid layout
 - [x] Verify frontend build succeeds with the new UI
+- [x] Add `JobFeedView` with React Query and backend GET /jobs
+- [x] Add PostJobView with automatic draft saving
+- [x] Connect PostJobView to backend POST /jobs
 
 **Next session starts at:**
-- M1-T2: JobFeedView + React Query
+- M1-T3: PostJobView + IndexedDB draft
 
 ---
 

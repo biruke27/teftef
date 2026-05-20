@@ -3,6 +3,14 @@ import type { JobCardProps } from '../components/JobCard';
 export const JOBS_API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
+export type CreateJobPayload = {
+  title: string;
+  description: string;
+  budget: number;
+  telegramId: string;
+  username?: string;
+};
+
 export async function fetchJobs(): Promise<JobCardProps[]> {
   const response = await fetch(`${JOBS_API_BASE_URL}/jobs`, {
     headers: {
@@ -21,7 +29,31 @@ export async function fetchJobs(): Promise<JobCardProps[]> {
     throw new Error('Unexpected jobs response format');
   }
 
-  return jobs;
+  return jobs.map((job) => ({
+    title: job.title,
+    budget: job.budget,
+    description: job.description ?? job.description_preview ?? '',
+    clientName: job.clientName ?? 'Client',
+    status: job.status,
+    postedAt: job.postedAt ?? new Date(job.createdAt).toLocaleDateString('en-ET'),
+  }));
+}
+
+export async function createJob(data: CreateJobPayload) {
+  const response = await fetch(`${JOBS_API_BASE_URL}/jobs`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? `Failed to create job: ${response.status}`);
+  }
+
+  return response.json();
 }
 
 export const mockJobs: JobCardProps[] = [
