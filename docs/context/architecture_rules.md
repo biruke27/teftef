@@ -55,6 +55,6 @@ One backend process. No separate services. No microservices. Everything in one F
 - Assume 3G, not WiFi.
 - All images must be SVG. No PNG/WebP in core UI.
 - API list responses max 10KB. List views never include full descriptions.
-- Chapa/Telebirr webhooks will fail. Retry logic is mandatory. Manual fallback is always active.
+- Phase 1 does not include payment gateway integration. Focus on OTC contact reveal and manual dispute review instead.
 - All forms auto-save to IndexedDB on every keystroke (500ms debounce).
 - React Query `staleTime` minimum 5 minutes. Job feed must be readable when offline.

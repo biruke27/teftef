@@ -21,7 +21,7 @@ These are not style guidelines. Violating them breaks the project.
 |------|--------|
 | **Files < ~200 lines** | Split files before exceeding this. Helps agents stay in context. |
 | **Mock data first** | Build UI with hardcoded data. Integrate backend APIs only after UI works. |
-| **Manual before automation** | Admin manually verifies payments, moderates, releases escrow. Automate only after manual path is proven. |
+| **P2P OTC Connection** | Platform acts as matchmaker. No financial custody or payment tracking in Phase 1. |
 | **No premature abstractions** | No service layers, repository patterns, or plugin systems. Write raw 3 times first. |
 | **TypeScript/JavaScript only** | No Python in backend. |
 | **Modular monolith** | One backend process. No microservices. |
@@ -54,7 +54,7 @@ If asked to build **any** of these, refuse and cite this list:
 | **ORM** | Prisma | Schema is source of truth. Read schema before DB logic. |
 | **Database** | PostgreSQL | On Railway. Use `prisma migrate deploy` in production. |
 | **Auth** | Telegram SDK (`initData`) | HMAC-SHA256 verification. No passwords or JWT rotation. |
-| **Payments** | Chapa + Telebirr | Deep links and QR codes. Never request card numbers. |
+| **Payments** | OTC contact coordination | Reveal Telegram/phone contacts; do not custody funds. |
 | **Offline** | IndexedDB via `idb` | Auto-save form drafts with 500ms debounce. |
 | **Caching** | React Query | `staleTime: 5 * 60 * 1000`. Always invalidate after mutations. |
 | **Hosting** | Railway | Listen on `process.env.PORT`. Run migrations on start. |
@@ -191,7 +191,6 @@ Once the project initializes, these files should exist in `docs/context/`:
 - `architecture_rules.md` — Rationale behind mandatory rules.
 - `ui_rules.md` — React/Tailwind conventions.
 - `deployment_notes.md` — Railway setup + env vars.
-- `payment_flow.md` — Payment state machine details.
 - `feature_status.md` — Feature completion tracking.
 
 ---
@@ -203,7 +202,8 @@ Design for these as the **default**, not edge cases:
 - **Assume 3G, not WiFi.** API responses stay under 10KB for list views.
 - **List endpoints omit full descriptions.** Cards only — details in separate endpoint.
 - **All images are SVG.** No PNG/WebP backgrounds.
-- **Webhooks will fail.** Always wrap Chapa/Telebirr webhook handlers in retry logic (see Patterns above). The manual "I Have Paid" flow is always active regardless.
+- **OTC connection first.** When a proposal is accepted, show both parties' Telegram username or phone. The platform does not hold funds.
+- **Trust updates are behavioral.** Users manually click 'Deal Confirmed' or 'Report Ghosting/Breach' to trigger background trust score changes.
 - **Spam rate limit is on by default.** Max 3 job posts per user per hour (see Patterns above).
 - **Admin manual verification.** Admins verify payments within 2 hours. This is the primary path.
 - **"Funds Secured" banner.** Show prominently (green) once payment confirmed. This is the trust signal.
@@ -242,7 +242,8 @@ const botToken = process.env.BOT_MODE === 'PROD'
 2. **If unsure about feasibility:** Check the Kill List. If it's there, refuse.
 3. **If working on features:** Check `docs/context/current_task.md` (and `active_bugs.md`) for priority.
 4. **When integrating with backend:** Follow the API contracts from `docs/context/api_contracts.md` or [CLAUDE.md §7](CLAUDE.md#7-api-contracts-summary).
-5. **When touching database:** Verify schema in `prisma/schema.prisma` or [CLAUDE.md §6](CLAUDE.md#6-prisma-schema-snapshot). Confirm all `@@index` directives are present.
+5. **When building state loops for Jobs or Proposals:** Ensure the state mapping bypasses funding. The transition flows directly from `PROPOSAL_ACCEPTED` → `IN_PROGRESS` (with contact detail exposure) → `COMPLETED_PENDING_RATING`.
+6. **When touching database:** Verify schema in `prisma/schema.prisma` or [CLAUDE.md §6](CLAUDE.md#6-prisma-schema-snapshot). Confirm all `@@index` directives are present.
 6. **Before deploying:** Ensure `prisma migrate deploy` is in the start command.
 7. **End of every session:** Run `npx prisma studio` and visually confirm the last record has the correct DB status.
 

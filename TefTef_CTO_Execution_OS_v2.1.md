@@ -17,9 +17,9 @@ The TefTef MVP is a Telegram Mini App (TMA). In Ethiopia, Telegram is the intern
 
 •        **Mobile-First Job Feed:** Vertical scroll, SVGs only, sub-2s load on 3G.
 
-•        **Escrow-Lite Workflow:** Client pays → Platform holds → Freelancer submits → Admin or Client releases.
+•        **OTC Frictionless Connection:** Client accepts bid → platform exposes instant contact details → marketplace steps out of the transaction path.
 
-•        **Payment Fallback:** "I Have Paid" button + manual transaction ID submission + pending state + admin verification.
+•        **Peer Confirmation Loop:** Simple actionable prompts after delivery allow both users to confirm a successful P2P transaction or flag unresponsiveness.
 
 •        **Offline Draft Mode:** Job posting and proposal forms must save drafts to localStorage/IndexedDB automatically.
 
@@ -36,11 +36,10 @@ The TefTef MVP is a Telegram Mini App (TMA). In Ethiopia, Telegram is the intern
 |Telegram Auth (initData)|Skill Badges|Standalone Web App|Smart Contracts|
 |Dual-Mode Job Feed|In-App Chat (Telegram links for now)|iOS/Android Native|Governance Tokens|
 |Job Posting & Bidding|Review System|Advanced Matching AI|Decentralized Identity|
-|Chapa/Telebirr Pay|Dispute Resolution UI|Multi-currency|Multi-chain Support|
-|Escrow-Lite + Manual Release|Trust Score Dashboard|API for Third Parties|DAO Governance|
+|Proposal Acceptance + Contact Exchange|Trust Engine Loops|Multi-currency|Multi-chain Support|
+|OTC Feedback Loops|Trust Score Dashboard|API for Third Parties|DAO Governance|
 |Offline Draft Mode|Skill Verification|Employer Branding|Microservices|
-|Payment Fallback Flow|Automated Escrow Release|Analytics Suite|Native App|
-|Behavioral Trust Score|Portfolio Media Upload|SEO (post-web)|Recommendation AI|
+|Behavioral Trust Score|Portfolio Media Upload|Analytics Suite|Native App|
 |Admin Panel (Telegram ID-gated)|Scheduled Jobs|Team Accounts|In-App Messaging|
 
 # PART 2 — TELEGRAM-FIRST ARCHITECTURE
@@ -438,35 +437,35 @@ There are no arbitrary 4-week deadlines. There are Missions. Each Mission has a 
 |---|
 |**🤖 LLM Prompts**<br><br>IMPLEMENT: "Create a Fastify POST /proposals route in TypeScript. It expects body: {jobId: string, amount: number, message: string} and a JWT Authorization header. Validate: amount > 0, message length between 20–500 chars, no existing proposal from same freelancerId for this jobId. Use the attached Prisma schema. Return the created Proposal or a 409 if duplicate. Under 60 lines."|
 
-## Mission 4: The Money — Success: Full flow from job post to mock payment
+## Mission 4: OTC Match & Trust Loops — Success: accepted proposal reveals contact details and users confirm delivery
 
-  **M4-T1**    **Payment Initiation with Chapa + Telebirr Fallback**
+  **M4-T1**    **OTC Match & Behavioral Trust Loop**
 
-**🎯 Objective:** Client accepts a proposal. A payment session is created. User is shown Chapa QR or Telebirr deep link. If not confirmed in 30 minutes, 'I Have Paid' button appears.
-
-|   |
-|---|
-|**⚠️ CRITICAL: Payment Testing Order**<br><br>Do not connect Chapa or Telebirr until you have tested the fallback flow completely. Testing two unknown systems at once guarantees failure.<br><br>**Step Order - Follow exactly:**<br><br>1. First, implement the "I Have Paid" button with fake transaction IDs<br>2. Test that admin panel shows AWAITING_VERIFICATION status<br>3. Test that admin can confirm and reject transactions<br>4. Test that user receives Telegram notification on confirmation<br>5. Only then connect Chapa test mode<br><br>**Why this order:** If you connect Chapa first and something fails, you will not know if the failure is Chapa's webhook, your fallback logic, or your database state. Isolate each variable. Test fallback in isolation. Add real payments after fallback works.<br><br>**Test credentials for development:** Use any string as a fake transaction ID. "TEST123" works. Do not waste time generating realistic IDs. The system should accept any non-empty string during development.|
+**🎯 Objective:** Client accepts a proposal. The job transitions to `IN_PROGRESS`, both parties receive mutual contact details, and users can confirm the deal or report ghosting/breach.
 
 |   |
 |---|
-|**📋 Implementation Steps**<br><br>On proposal acceptance (PATCH /proposals/:id status=ACCEPTED), create Transaction record with status PENDING.<br><br>Build PaymentView.tsx: show Chapa QR code image (use Chapa test mode) AND Telebirr deep link button.<br><br>Telebirr deep link format: telebirr://pay?amount={amount}&ref={txId}<br><br>Set a 30-minute timer in localStorage: payment_initiated_at = Date.now()<br><br>If Date.now() - payment_initiated_at > 30min, show 'I Have Paid' button.<br><br>On click, show text input for manual transaction ID. Submit POST /payments/manual-claim.<br><br>Backend: Update Transaction status to AWAITING_VERIFICATION, store manual_tx_id.<br><br>Send Telegram Bot message to all ADMIN_IDS: 'New payment to verify: TX ID [id], Amount [amt] ETB'.|
+|**⚠️ CRITICAL:** Do not build escrow or payment tracking in Phase 1. The platform is a matchmaker, not a custodian.|
 
 |   |
 |---|
-|**✅ Expected Output**<br><br>Client sees payment screen with QR and Telebirr button. After 30 minutes (test with 1 minute), 'I Have Paid' button appears. On manual submission, DB record shows AWAITING_VERIFICATION. Admin receives Telegram message.|
+|**📋 Implementation Steps**<br><br>On proposal acceptance (PATCH /proposals/:id status=ACCEPTED), set the job status to `IN_PROGRESS` and reveal both parties' Telegram username/phone number in the job detail view.<br><br>Build JobDetailView and ProposalStatus UI so the client and freelancer can each see the other's contact details immediately.<br><br>Expose two post-delivery actions: `Deal Confirmed` and `Report Ghosting/Breach`.<br><br>When either party taps `Deal Confirmed`, update the job status toward `COMPLETED` and trigger a trust score recalculation.<br><br>When either party taps `Report Ghosting/Breach`, flag the job for admin review and update the job to `DISPUTED` if needed.<br><br>This is a pure OTC flow with no internal transaction lifecycle in Phase 1.|
 
 |   |
 |---|
-|**🔍 Verification Criteria**<br><br>Confirm Transaction status transitions correctly in DB.<br><br>Confirm admin Telegram message arrives on real phone.<br><br>Test with 1-minute timeout for development. Restore 30 minutes before production.|
+|**✅ Expected Output**<br><br>Client accepts a proposal and both parties see each other's Telegram handles/phone numbers. The job becomes `IN_PROGRESS`. After delivery, either user can confirm completion or report a problem.|
 
 |   |
 |---|
-|**🐛 Debugging Fallback**<br><br>If Telegram Bot message fails, log the error but do not block the payment flow. Admin will check the queue manually.<br><br>If Chapa test mode QR does not render, use a placeholder image. The fallback flow is what matters for MVP.|
+|**🔍 Verification Criteria**<br><br>Confirm accepted proposals move jobs to `IN_PROGRESS` and reveal contact details.<br><br>Confirm the UI shows `Deal Confirmed` and `Report Ghosting/Breach` actions.<br><br>Confirm trust-related state changes occur when either action is taken.|
 
 |   |
 |---|
-|**⏮ Rollback Guidance**<br><br>If payment flow is broken, revert to 100% manual: client pays outside app, admin manually sets Transaction to CONFIRMED. Document this as 'Manual Mode' in admin panel.|
+|**🐛 Debugging Guidance**<br><br>If contact details are not visible after acceptance, verify the job status transition and the job detail rendering logic.<br><br>If `Deal Confirmed` does not update the job, verify the POST/PATCH handler and trust recalculation path.|
+
+|   |
+|---|
+|**⏮ Rollback Guidance**<br><br>If this flow is broken, revert to a read-only contact reveal state and add a temporary note: 'Contact details available on proposal acceptance.' Ensure the job still transitions to `IN_PROGRESS`.|
 
 |   |
 |---|
@@ -523,14 +522,14 @@ There are no arbitrary 4-week deadlines. There are Missions. Each Mission has a 
 |2. Open Job|Frontend|GET /jobs/:id. Full description, client trust badge, budget.|JobDetailView (M3-T1)|
 |3. Submit Proposal|Frontend + Backend|ProposalForm auto-saves draft. POST /proposals. DB record: status=PENDING.|Proposal module (M3-T1)|
 |4. Client Notified|Backend|Telegram Bot sends message to client: 'New proposal on your job [title]'.|Notification module|
-|5. Client Accepts|Backend|PATCH /proposals/:id status=ACCEPTED. Transaction record created: status=PENDING.|Proposal + Payment modules|
-|6. Freelancer Notified|Backend|Telegram Bot: 'Your proposal was accepted. Client is paying.'|Notification module|
-|7. Client Pays|Frontend|PaymentView shows Chapa QR + Telebirr link + fallback timer.|Payment module (M4-T1)|
-|8. Webhook or Manual|Backend|Chapa webhook auto-confirms OR user submits manual TX ID.|Payment fallback (M4-T1)|
-|9. Admin Verifies|Admin Panel|Admin confirms manual TX ID. Transaction: status=CONFIRMED.|Admin module (M4-T2)|
-|10. Work Begins|Both|'Funds Secured' banner on job. Freelancer delivers work.|Job status=IN_PROGRESS|
-|11. Client Releases|Backend|POST /escrow/release/:jobId. Admin confirms. Transaction: status=CONFIRMED.|Admin escrow release|
-|12. Trust Updated|Backend|Both users' trust scores recalculated. Job status=COMPLETED.|Trust module|
+|5. Client Accepts|Backend|PATCH /proposals/:id status=ACCEPTED. Job moves to `IN_PROGRESS` and contact details are revealed.|Proposal + OTC modules|
+|6. Freelancer Notified|Backend|Telegram Bot: 'Your proposal was accepted. Contact the client directly to complete work.'|Notification module|
+|7. Contact Exchanged|Frontend|Both parties see each other's Telegram username or phone on the job page.|OTC contact reveal|
+|8. Work Happens Off-Platform|Both|Client and freelancer complete the work and payment externally.|External OTC flow|
+|9. Confirm Deal|Frontend|Either party taps `Deal Confirmed` or `Report Ghosting/Breach`.|Trust loop UI|
+|10. Trust Updates|Backend|Job status moves toward `COMPLETED` or `DISPUTED` and trust score updates behaviorally.|Trust module|
+|11. Admin Review|Admin Panel|If a report is filed, admin reviews the case and may ban or downgrade trust.|Admin moderation|
+|12. Completion|Backend|Job status reflects the final outcome based on mutual confirmation or dispute.|Trust module|
 
 # PART 7 — DEBUGGING DICTIONARY
 
@@ -560,17 +559,14 @@ A reference for the most common failures. Each entry has symptoms, root cause, i
 |Rollback|Restore the original migration file from git: git checkout migrations/[migration_name]/migration.sql|
 |LLM Debug Prompt|"npx prisma migrate dev fails with: [paste exact error]. My current schema.prisma is: [paste]. My migration history shows: [paste migrate status output]. What is the correct fix without losing production data?"|
 
-## 7.3 Webhook Failure (Chapa/Telebirr)
+## 7.3 OTC Match Guidance
 
 |**Field**|**Details**|
 |---|---|
-|Symptom|Payment completed on Chapa/Telebirr but Transaction status stays PENDING. Webhook endpoint not hit.|
-|Root Cause A|Webhook URL is localhost, not the public Railway URL. Chapa cannot reach it.|
-|Root Cause B|HTTPS required. Railway provides HTTPS by default. Self-signed certs will fail.|
-|Root Cause C|Webhook secret mismatch. Chapa sends X-Chapa-Signature header. Backend does not verify or uses wrong secret.|
-|Isolation|Use RequestBin or webhook.site to capture raw webhook payloads from Chapa test mode.|
-|Fallback — Always Active|The 'I Have Paid' manual fallback is always available. Webhook failure does not block business.|
-|LLM Debug Prompt|"My Chapa webhook endpoint POST /payments/webhook is never called. My Railway URL is [url]. Here is my webhook handler: [paste]. Here is the Chapa webhook configuration I set up: [paste]. What could prevent Chapa from reaching my endpoint?"|
+|Scope|Phase 1 does not include Chapa/Telebirr webhook integration or platform payment processing. Build the OTC contact reveal and trust confirmation paths first.|
+|Focus|Ensure accepted proposals immediately show mutual Telegram/phone contact details.|
+|Dispute Flow|If a user reports ghosting/breach, flag the job for admin review and set job status to `DISPUTED` if needed.|
+|LLM Debug Prompt|"I need to build a pure OTC matchmaker flow for proposal acceptance. How should I reveal contact details and handle deal confirmation without platform escrow?"|
 
 ## 7.4 Stale React State / Stale React Query Data
 
@@ -768,10 +764,10 @@ The small local LLM has no memory between sessions. Your /docs/context/ folder i
 
 |**Scenario**|**What Happens**|**Resolution Path**|
 |---|---|---|
-|Telebirr deducted, webhook never fires|Transaction stays PENDING. User is frustrated. They paid real money.|User taps 'I Have Paid'. Submits TX ID. Admin verifies within 2 hours.|
-|User claims payment but did not pay|Admin rejects manual TX ID. Transaction set to FAILED. User notified.|Admin sends Telegram message explaining. User can retry.|
-|Chapa session times out mid-payment|User sees 'Payment failed' from Chapa. Transaction stays PENDING.|Show 'Try Again' button. Reinitialize Chapa session with same Transaction ID.|
-|Double payment (user paid twice)|Two AWAITING_VERIFICATION transactions for same job.|Admin detects duplicate, marks one as REFUNDED, sends note to user.|
+|OTC contact exchange abuse|A client or freelancer agrees to pay outside the platform, then fails to deliver or communicate.|Admin reviews the report, may downgrade trust score, ban the offending user, and flag the job as DISPUTED.|
+|False delivery claims|One party marks the deal confirmed while the other disputes the outcome.|Admin evaluates conversation history and trust signals to resolve the dispute.|
+|Contact detail mismatch|Displayed Telegram username or phone is incorrect or missing.|Verify job status is `IN_PROGRESS` and contact reveal logic is functioning.|
+|Repeated ghosting reports|Same user receives multiple ghosting/breach reports.|Apply trust score penalties and consider temporary ban.|
 
 ## 10.3 Fraud Attempts & Fake Freelancers
 
@@ -779,21 +775,21 @@ The small local LLM has no memory between sessions. Your /docs/context/ folder i
 |---|---|---|
 |Fake portfolio links|New account, trust_score < 40, multiple jobs applied in < 1 hour|Admin reviews proposals from low-trust accounts. Can require phone verification.|
 |Spam job posting (fake jobs to harvest contacts)|Multiple jobs posted by same account in < 24 hours with no activity|Trust module flags. Admin reviews and deletes. Ban user if pattern repeats.|
-|Escrow bypass (claim payment outside platform)|Client and freelancer agree to skip escrow. Job never funded.|This is a business risk, not a security vulnerability. Platform loses commission. Reduce by showing clear 'Funds Secured' value prop.|
+|OTC contact abuse|Client or freelancer agrees to pay outside the platform, then fails to deliver or respond.|Admin reviews the report, may downgrade trust score, ban the offending user, and flag the job as DISPUTED.|
 |Account sharing (one person, multiple Telegram IDs)|Multiple accounts with same IP (not detectable in TMA) but same writing style|Not detectable at MVP scale. Address at 500+ users.|
-|False 'I Have Paid' claims|Submitted TX IDs that don't exist in Chapa/Telebirr records|Admin rejects. Repeated false claims → trust score penalty → eventual ban.|
+|False delivery claims|One party marks the deal confirmed while the other disputes the outcome.|Admin evaluates evidence and trust signals to resolve the dispute.|
 
-## 10.4 Escrow Confusion — User Education
+## 10.4 OTC Confirmation — User Education
 
-Most Ethiopian freelancers and clients have never used an escrow system. They will be confused. Explain it every time, not once.
+Most Ethiopian freelancers and clients have never used a peer-to-peer payment path inside a marketplace. Explain the OTC workflow clearly and repeatedly.
 
-•        Show a 3-step visual on the PaymentView: '1. Client pays TefTef → 2. You complete the work → 3. TefTef pays you.' Use icons, not text.
+•        Show a 3-step visual on the JobDetailView: '1. Client accepts proposal → 2. Contact details appear → 3. Confirm deal or report breach.' Use icons, not text.
 
-•        The 'Funds Secured' banner must be prominent and green on the job detail page once payment is confirmed. This is the trust signal.
+•        Avoid language that implies the platform holds or releases money. Use phrases like 'Agree on payment off-platform' and 'Confirm completion when work is done.'
 
-•        When client releases funds, send a Telegram message to the freelancer: 'ETB [amount] has been sent to your account. Check your Telebirr/Chapa wallet.'
+•        When a user clicks `Deal Confirmed`, show a short confirmation toast: 'Thanks. The deal is marked complete and your trust score will update.'
 
-•        When payment is AWAITING_VERIFICATION, show freelancer: 'Your client has submitted payment. It is being verified. This usually takes less than 2 hours. You will receive a Telegram notification.'
+•        When a user clicks `Report Ghosting/Breach`, show a clear next step: 'Our admin team will review this report and may adjust trust scores.'
 
 ## 10.5 Admin Manual Intervention Protocols
 

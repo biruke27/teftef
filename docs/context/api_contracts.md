@@ -55,22 +55,15 @@
 - **Auth required:** JWT (client only — must own the job)
 - **Request body:** `{ status: 'ACCEPTED' | 'REJECTED' }`
 - **Response (200):** `{ proposal: Proposal }`
-- **Side effects on ACCEPTED:** Creates Transaction record with `status: PENDING`. Sends Telegram notification to freelancer.
+- **Side effects on ACCEPTED:** Sets `job.status = IN_PROGRESS`, reveals mutual contact details to both parties, and sends a Telegram notification to the freelancer.
 
 ---
 
 ## Payments
 
-### POST `/payments/manual-claim`
-- **Auth required:** JWT
-- **Request body:** `{ transactionId: string, manualTxId: string }`
-- **Response (200):** `{ transaction: Transaction }`
-- **Side effects:** Sets `status: AWAITING_VERIFICATION`, stores `manual_tx_id`. Sends Telegram Bot message to all ADMIN_IDS.
+Phase 1 uses an OTC matchmaker model. The platform does not hold funds or process payments directly in this phase. Clients and freelancers exchange Telegram handles/phone numbers after proposal acceptance, then confirm delivery with behavioral feedback actions.
 
-### POST `/payments/webhook`
-- **Auth required:** Chapa/Telebirr signature header (not JWT)
-- **Request body:** Chapa/Telebirr webhook payload (varies by gateway)
-- **Notes:** Must use retry logic (3 retries, exponential backoff). Look up Transaction by `gateway_ref`, not by ID. Save failed webhooks to DB.
+_Any payment gateway or transaction verification routes are Phase 2 work and not part of the MVP._
 
 ---
 
@@ -95,10 +88,6 @@
 
 ### DELETE `/admin/jobs/:id`
 - **Response (204):** No content
-
-### POST `/admin/escrow/release/:jobId`
-- **Response (200):** `{ transaction: Transaction }`
-- **Side effects:** Sets Transaction status to CONFIRMED. Sends Telegram notification to freelancer.
 
 ---
 

@@ -17,7 +17,7 @@ Stack: React + Vite + Tailwind (frontend) · Fastify + TypeScript (backend) · P
 
 - **Files stay under ~200 lines.** If a file exceeds this, split it before adding new code.
 - **Mock data before backend integration.** Never wire a UI to a real API until the UI works with hardcoded data.
-- **Manual before automation.** Admin manually verifies payments. Moderation is manual. No automation until the manual version is proven.
+- **Manual before automation.** Admin handles manual dispute mediation only. The platform does not touch escrow or user funds in Phase 1.
 - **No premature abstractions.** No service layers, repository patterns, or plugin systems until the same logic has been written raw at least 3 times.
 - **Single language.** TypeScript/JavaScript only. No Python in the backend.
 - **Modular monolith only.** No microservices. No separate services. One backend process.
@@ -48,12 +48,11 @@ Stack: React + Vite + Tailwind (frontend) · Fastify + TypeScript (backend) · P
 | Telegram Auth (initData) | Skill Badges | Standalone Web App | Smart Contracts |
 | Dual-Mode Job Feed | In-App Chat (Telegram links for now) | iOS/Android Native | Governance Tokens |
 | Job Posting & Bidding | Review System | Advanced Matching AI | Decentralized Identity |
-| Chapa/Telebirr Pay | Dispute Resolution UI | Multi-currency | Multi-chain Support |
-| Escrow-Lite + Manual Release | Trust Score Dashboard | API for Third Parties | DAO Governance |
+| OTC contact reveal | Dispute Resolution UI | Multi-currency | Multi-chain Support |
+| Behavioral trust loops | Trust Score Dashboard | API for Third Parties | DAO Governance |
 | Offline Draft Mode | Skill Verification | Employer Branding | Microservices |
-| Payment Fallback Flow | Automated Escrow Release | Analytics Suite | Native App |
-| Behavioral Trust Score | Portfolio Media Upload | SEO (post-web) | Recommendation AI |
-| Admin Panel (Telegram ID-gated) | Scheduled Jobs | Team Accounts | In-App Messaging |
+| Matchmaker MVP | Automated Escrow Release | Analytics Suite | Native App |
+| Admin Panel (Telegram ID-gated) | Portfolio Media Upload | SEO (post-web) | Recommendation AI |
 
 ---
 
@@ -87,7 +86,7 @@ Stack: React + Vite + Tailwind (frontend) · Fastify + TypeScript (backend) · P
 | ORM | Prisma | Schema is source of truth. Always read schema before touching DB logic. |
 | Database | PostgreSQL | Hosted on Railway. Use `prisma migrate deploy` in production. |
 | Auth | Telegram WebApp SDK (`initData`) | HMAC-SHA256 verification. No passwords. No JWT rotation complexity. |
-| Payments | Chapa + Telebirr | Deep links and QR codes. Never ask for card numbers. |
+| Payments | OTC contact coordination | Reveal contact details and enable off-platform payment negotiation. |
 | Offline | IndexedDB via `idb` package | All forms auto-save drafts with 500ms debounce. |
 | Caching | React Query | `staleTime: 5 * 60 * 1000`. Always invalidate after mutations. |
 | Hosting | Railway | App must listen on `process.env.PORT`. Run `prisma migrate deploy` on start. |
@@ -185,13 +184,11 @@ enum PayMethod      { CHAPA TELEBIRR MANUAL }
 | GET | `/jobs/:id` | JWT | Full job detail |
 | POST | `/proposals` | JWT | Submit proposal. No duplicates (@@unique enforced) |
 | PATCH | `/proposals/:id` | JWT | Update proposal status (client only) |
-| POST | `/payments/manual-claim` | JWT | Submit manual TX ID after "I Have Paid" |
-| POST | `/payments/webhook` | Signature | Chapa/Telebirr webhook. Uses retry logic (see §11). |
-| GET | `/admin/transactions` | JWT + Admin | List AWAITING_VERIFICATION transactions |
-| POST | `/admin/transactions/:id/verify` | JWT + Admin | Confirm or reject a manual payment |
 | GET | `/admin/users/:id` | JWT + Admin | View user. Ban/unban. Trust override. |
 | DELETE | `/admin/jobs/:id` | JWT + Admin | Delete spam job |
-| POST | `/admin/escrow/release/:jobId` | JWT + Admin | Manually release escrowed funds |
+| POST | `/admin/reports/:jobId` | JWT + Admin | Flag a job for dispute review |
+| POST | `/admin/users/:id/trust` | JWT + Admin | Adjust trust score or ban user |
+
 
 **Admin check — backend:** All `/admin/*` routes verify that the JWT user's `telegramId` is in the hardcoded `ADMIN_IDS` array (see §11). Do not rely on env vars for this during MVP.
 
@@ -224,9 +221,8 @@ enum PayMethod      { CHAPA TELEBIRR MANUAL }
 | Telegram auth (initData verify) | NOT_STARTED |
 | ProposalForm + draft | NOT_STARTED |
 | Backend POST /proposals | NOT_STARTED |
-| Payment initiation (Chapa/Telebirr) | NOT_STARTED |
-| Payment fallback "I Have Paid" flow | NOT_STARTED |
-| Webhook retry handler | NOT_STARTED |
+| OTC contact reveal | NOT_STARTED |
+| P2P feedback loops | NOT_STARTED |
 | Admin panel (ID-gated, hardcoded) | NOT_STARTED |
 | Trust score calculation | NOT_STARTED |
 | Telegram Bot notifications | NOT_STARTED |
@@ -296,28 +292,13 @@ if (recentJobs >= 3) {
 }
 ```
 
-**Webhook retry — on all payment webhook handlers:**
-```ts
-async function handleWebhookWithRetry(payload, retryCount = 0) {
-  try {
-    await processPayment(payload);
-  } catch (error) {
-    if (retryCount < 3) {
-      setTimeout(() => {
-        handleWebhookWithRetry(payload, retryCount + 1);
-      }, 1000 * Math.pow(2, retryCount)); // 1s, 2s, 4s backoff
-    } else {
-      await prisma.failedWebhook.create({ data: { payload, error: error.message } });
-      sendAdminAlert('Webhook failed after 3 retries');
-    }
-  }
-}
-```
+**Payment and webhook patterns are Phase 2 guidance only.**
+
+Phase 1 does not include platform-managed payments, Chapa/Telebirr webhooks, or manual transaction verification. Build the OTC contact reveal and trust/feedback loop first.
 
 **console.error labeling — every single time:**
 ```ts
 // Always prefix with mission-task ID. Never use a bare console.error.
-console.error('[M4-T1] payment verification failed:', error);
 console.error('[M2-T1] initData HMAC check failed:', error);
 ```
 
@@ -326,12 +307,12 @@ console.error('[M2-T1] initData HMAC check failed:', error);
 await queryClient.invalidateQueries({ queryKey: ['jobs'] });
 ```
 
-**Payment testing order — follow exactly, never reverse:**
-1. Implement "I Have Paid" with fake TX IDs first
-2. Confirm admin panel shows `AWAITING_VERIFICATION`
-3. Confirm admin can confirm and reject
-4. Confirm user receives Telegram notification
-5. Only then connect Chapa test mode
+**MVP testing order — follow exactly:**
+1. Implement job posting, proposals, and proposal acceptance first
+2. Show contact details immediately on accept
+3. Add `Deal Confirmed` and `Report Ghosting/Breach`
+4. Add admin dispute review and trust score updates
+5. Keep payment gateway integration out of Phase 1
 
 ---
 
@@ -368,9 +349,8 @@ const botToken = process.env.BOT_MODE === 'PROD'
 - Assume 3G, not WiFi. Keep API responses under 10KB for list views.
 - Never return full job descriptions in list endpoints. Cards only.
 - All images must be SVG. No PNG/WebP backgrounds.
-- Chapa/Telebirr webhooks **will** fail. Always wrap webhook handlers in retry logic (see §11). The manual "I Have Paid" fallback is always active regardless.
-- Admin verifies payments manually within 2 hours. This is the primary path, not the fallback.
-- Show "Funds Secured" banner prominently (green) once payment is confirmed. This is the trust signal.
+- OTC Connection Rule: When a client accepts a proposal, instantly transition the job status to `IN_PROGRESS` and reveal mutual communication handles (Telegram username/Phone number) to both parties.
+- P2P Completion Loop: Trust updates are purely behavioral. Users manually click 'Deal Confirmed' or 'Report Ghosting/Breach' to trigger background Trust Score modifications.
 - Spam rate limit is on by default: max 3 job posts per user per hour (see §11).
 - At the end of every coding session, open Prisma Studio and visually verify the last record you touched has the correct status. Do not trust the API response alone.
 

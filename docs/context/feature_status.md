@@ -42,15 +42,13 @@
 | Backend POST /proposals | NOT_STARTED | M3-T1 |
 | Backend PATCH /proposals/:id | NOT_STARTED | M3-T1 |
 
-## Mission 4: The Money
+## Mission 4: OTC Reputation Loops
 
 | Feature | Status | Mission-Task |
 |---|---|---|
-| Payment initiation (Chapa/Telebirr) | NOT_STARTED | M4-T1 |
-| Payment fallback "I Have Paid" flow | NOT_STARTED | M4-T1 |
-| Webhook retry handler | NOT_STARTED | M4-T1 |
+| OTC contact reveal | NOT_STARTED | M3-T1 |
+| P2P feedback loops | NOT_STARTED | M4-T1 |
 | Admin panel (ID-gated, hardcoded) | NOT_STARTED | M4-T2 |
-| Admin payment verification workflow | NOT_STARTED | M4-T2 |
 
 ## Phase 2 (Post-MVP — Do Not Build Until MVP is Live)
 
