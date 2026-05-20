@@ -22,10 +22,10 @@
 | Feature | Status | Mission-Task |
 |---|---|---|
 | JobCard component | DONE ✅ | M1-T1 |
-| JobFeedView + React Query | NOT_STARTED | M1-T2 |
+| JobFeedView + React Query | DONE ✅ | M1-T2 |
 | PostJobView + IndexedDB draft | NOT_STARTED | M1-T3 |
-| Backend GET /jobs | NOT_STARTED | M1-T2 |
-| Backend POST /jobs | NOT_STARTED | M1-T3 |
+| Backend GET /jobs | DONE ✅ | M1-T2 |
+| Backend POST /jobs | DONE ✅ | M1-T3 |
 
 ## Mission 2: Auth Bridge
 
