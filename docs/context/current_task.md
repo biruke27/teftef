@@ -1,9 +1,9 @@
 # Current Task
 
-Mission: M1 — The Job Board
-Task: M1-T3 — PostJobView + IndexedDB draft
+Mission: M3 — Proposals and OTC Flow
+Task: M3-T1 — JobDetailView + Proposal Form
 
-**Goal:** Build a job posting form with local draft persistence and connect it to the backend job create route.
+**Goal:** Build a job detail page that shows full job information and lets freelancers submit proposals.
 
 **Status:** IN_PROGRESS
 
@@ -15,9 +15,13 @@ Task: M1-T3 — PostJobView + IndexedDB draft
 - [x] Add `JobFeedView` with React Query and backend GET /jobs
 - [x] Add PostJobView with automatic draft saving
 - [x] Connect PostJobView to backend POST /jobs
+- [x] Finalize draft persistence and local dev fallback
+- [x] Implement Telegram auth verify and JWT session flow
+
+**Note:** Every completed task must be tested and committed before moving to the next one.
 
 **Next session starts at:**
-- M1-T3: PostJobView + IndexedDB draft
+- M3-T1: Job detail + proposal flow
 
 ---
 
@@ -36,13 +40,13 @@ Task: M1-T3 — PostJobView + IndexedDB draft
 **Build sequence:**
 1. [x] Bot opens Mini App shell (M0-T1) ✅ DONE
 2. [x] Backend /health + DB (M0-T2, M0-T3) ✅ DONE
-3. [x] Mock job feed (M1-T1) ✅
-4. [ ] JobFeedView + React Query (M1-T2) ← YOU ARE HERE NEXT
-5. [ ] PostJobView + draft (M1-T3)
-6. [ ] Real backend + DB jobs
-6. [ ] Telegram auth (M2-T1)
-7. [ ] Proposals (M3-T1)
-8. [ ] Payment + fallback (M4-T1)
-9. [ ] Admin panel (M4-T2)
-10. [ ] Trust score
-11. [ ] Telegram Bot notifications
+3. [x] Mock job feed (M1-T1) ✅ DONE
+4. [x] JobFeedView + React Query (M1-T2) ✅ DONE
+5. [x] PostJobView + draft (M1-T3) ✅ DONE
+6. [x] Real backend + DB jobs ✅ DONE
+7. [x] Telegram auth (M2-T1) ✅ DONE
+8. [ ] Proposals (M3-T1) ← YOU ARE HERE NEXT
+9. [ ] Payment + fallback (M4-T1)
+10. [ ] Admin panel (M4-T2)
+11. [ ] Trust score
+12. [ ] Telegram Bot notifications

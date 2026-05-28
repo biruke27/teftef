@@ -3,8 +3,9 @@
 > Valid values: `NOT_STARTED` · `IN_PROGRESS` · `DONE` · `BLOCKED`
 > Update this after every session. Mark DONE only when verified on a real device.
 > Do not try to "improve" DONE features unless explicitly asked.
+> Every completed task should be tested and committed before progress is recorded.
 
-**Last updated:** 2026-05-16 (M0-T1 complete)
+**Last updated:** 2026-05-28 (M2-T1 complete)
 
 ---
 
@@ -23,7 +24,7 @@
 |---|---|---|
 | JobCard component | DONE ✅ | M1-T1 |
 | JobFeedView + React Query | DONE ✅ | M1-T2 |
-| PostJobView + IndexedDB draft | IN_PROGRESS | M1-T3 |
+| PostJobView + IndexedDB draft | DONE ✅ | M1-T3 |
 | Backend GET /jobs | DONE ✅ | M1-T2 |
 | Backend POST /jobs | DONE ✅ | M1-T3 |
 
@@ -31,7 +32,7 @@
 
 | Feature | Status | Mission-Task |
 |---|---|---|
-| Telegram auth (initData verify) | NOT_STARTED | M2-T1 |
+| Telegram auth (initData verify) | DONE ✅ | M2-T1 |
 
 ## Mission 3: Proposals
 

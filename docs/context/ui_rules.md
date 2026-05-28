@@ -62,6 +62,7 @@
 - No horizontal scroll — all layouts stack vertically on mobile
 - SVG icons only — no PNG/WebP image backgrounds
 - Test every component on real phone inside Telegram before marking DONE
+- Commit after every completed feature that has been fully tested
 
 ---
 

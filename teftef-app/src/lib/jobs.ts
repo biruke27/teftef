@@ -1,21 +1,30 @@
 import type { JobCardProps } from '../components/JobCard';
+import { getSessionToken } from './session';
 
-export const JOBS_API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? '';
+export const JOBS_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export type CreateJobPayload = {
   title: string;
   description: string;
   budget: number;
-  telegramId: string;
-  username?: string;
 };
+
+function authHeaders(): HeadersInit {
+  const token = getSessionToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
 
 export async function fetchJobs(): Promise<JobCardProps[]> {
   const response = await fetch(`${JOBS_API_BASE_URL}/jobs`, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: authHeaders(),
   });
 
   if (!response.ok) {
@@ -42,9 +51,7 @@ export async function fetchJobs(): Promise<JobCardProps[]> {
 export async function createJob(data: CreateJobPayload) {
   const response = await fetch(`${JOBS_API_BASE_URL}/jobs`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: authHeaders(),
     body: JSON.stringify(data),
   });
 

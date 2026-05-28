@@ -18,14 +18,17 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [draftSaved, setDraftSaved] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     loadDraft<DraftData>(DRAFT_KEY).then((draft) => {
-      if (draft) {
+      if (draft?.title || draft?.description || draft?.budget) {
         setTitle(draft.title ?? '');
         setDescription(draft.description ?? '');
         setBudget(draft.budget ?? '');
+        setDraftSaved(true);
+        setDraftLoaded(true);
       }
     });
   }, []);
@@ -33,19 +36,22 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     setDraftSaved(false);
     const timer = window.setTimeout(async () => {
-      if (title || description || budget) {
-        await saveDraft(DRAFT_KEY, { title, description, budget });
-        setDraftSaved(true);
+      try {
+        if (title || description || budget) {
+          await saveDraft(DRAFT_KEY, { title, description, budget });
+          setDraftSaved(true);
+        } else {
+          await clearDraft(DRAFT_KEY);
+        }
+      } catch (error) {
+        console.error('[M1-T3] draft persistence failed:', error);
       }
     }, 500);
 
     return () => window.clearTimeout(timer);
   }, [title, description, budget]);
 
-  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  const telegramId = telegramUser?.id?.toString() ?? '';
-  const username = telegramUser?.username;
-  const canPost = Boolean(telegramId && title && description && budget);
+  const canPost = Boolean(title && description && budget);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,8 +69,6 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
         title,
         description,
         budget: Number(budget),
-        telegramId,
-        username,
       });
 
       await clearDraft(DRAFT_KEY);
@@ -136,11 +140,13 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
           />
         </label>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3">
           <div>
             <p className="text-sm text-slate-500">Your draft is saved automatically after 500ms of inactivity.</p>
             {draftSaved ? (
-              <p className="text-sm text-slate-600">Draft saved locally.</p>
+              <p className="text-sm text-slate-600">
+                {draftLoaded ? 'Draft restored from browser storage.' : 'Draft saved locally.'}
+              </p>
             ) : null}
           </div>
 

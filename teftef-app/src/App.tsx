@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { JobFeedView } from './components/JobFeedView';
 import { PostJobView } from './components/PostJobView';
+import { verifyTelegramInitData } from './lib/auth';
+import { getSessionToken, setSessionToken } from './lib/session';
 
 // [M0-T1] Telegram Mini App Shell — reads user name from initData
 declare global {
@@ -8,6 +11,7 @@ declare global {
     Telegram: {
       WebApp: {
         ready: () => void;
+        initData: string;
         initDataUnsafe: {
           user?: { first_name: string; id: number; username?: string };
         };
@@ -17,12 +21,38 @@ declare global {
 }
 
 function App() {
-  window.Telegram?.WebApp?.ready();
+  const queryClient = useQueryClient();
+  const [activeView, setActiveView] = useState<'feed' | 'post'>('feed');
+  const isPostView = activeView === 'post';
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [sessionToken, setSessionTokenState] = useState(getSessionToken());
+
+  useEffect(() => {
+    window.Telegram?.WebApp?.ready();
+  }, []);
+
+  useEffect(() => {
+    const initData = window.Telegram?.WebApp?.initData;
+
+    if (!sessionToken && initData) {
+      setAuthLoading(true);
+      verifyTelegramInitData(initData)
+        .then((response) => {
+          setSessionToken(response.sessionToken);
+          setSessionTokenState(response.sessionToken);
+          queryClient.invalidateQueries({ queryKey: ['jobs'] });
+        })
+        .catch((error) => {
+          console.error('[M2-T1] auth verify failed:', error);
+          setAuthError((error as Error)?.message ?? 'Unable to verify Telegram auth.');
+        })
+        .finally(() => setAuthLoading(false));
+    }
+  }, [queryClient, sessionToken]);
 
   const name =
     window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name ?? 'there';
-  const [activeView, setActiveView] = useState<'feed' | 'post'>('feed');
-  const isPostView = activeView === 'post';
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6">
@@ -67,6 +97,11 @@ function App() {
               </button>
             </div>
           </div>
+          {authLoading || authError ? (
+            <div className="mt-4 rounded-3xl border px-4 py-3 text-sm text-slate-700 bg-slate-50">
+              {authLoading ? 'Verifying Telegram session…' : authError}
+            </div>
+          ) : null}
         </header>
 
         {isPostView ? (
