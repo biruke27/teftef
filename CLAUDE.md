@@ -210,15 +210,15 @@ enum PayMethod      { CHAPA TELEBIRR MANUAL }
 
 | Feature | Status |
 |---|---|
-| Vite + React + Tailwind shell | NOT_STARTED |
-| Telegram SDK connection | NOT_STARTED |
-| Fastify backend + /health | NOT_STARTED |
-| Prisma schema + migrations + indexes | NOT_STARTED |
-| JobCard component | NOT_STARTED |
-| JobFeedView + React Query | NOT_STARTED |
-| PostJobView + IndexedDB draft | NOT_STARTED |
-| Backend GET/POST /jobs | NOT_STARTED |
-| Telegram auth (initData verify) | NOT_STARTED |
+| Vite + React + Tailwind shell | DONE ✅ |
+| Telegram SDK connection | DONE ✅ |
+| Fastify backend + /health | DONE ✅ |
+| Prisma schema + migrations + indexes | DONE ✅ |
+| JobCard component | DONE ✅ |
+| JobFeedView + React Query | DONE ✅ |
+| PostJobView + IndexedDB draft | DONE ✅ |
+| Backend GET/POST /jobs | DONE ✅ |
+| Telegram auth (initData verify) | DONE ✅ |
 | ProposalForm + draft | NOT_STARTED |
 | Backend POST /proposals | NOT_STARTED |
 | OTC contact reveal | NOT_STARTED |

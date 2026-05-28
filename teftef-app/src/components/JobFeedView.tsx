@@ -1,7 +1,11 @@
 import { JobCard } from './JobCard';
 import { useJobs } from '../hooks/useJobs';
 
-export function JobFeedView() {
+interface JobFeedViewProps {
+  onJobClick: (id: string) => void;
+}
+
+export function JobFeedView({ onJobClick }: JobFeedViewProps) {
   const { data: jobs = [], isLoading, isError, error, refetch } = useJobs();
 
   if (isLoading && jobs.length === 0) {
@@ -58,6 +62,7 @@ export function JobFeedView() {
               clientName={job.clientName}
               status={job.status}
               postedAt={job.postedAt}
+              onClick={() => onJobClick(job.id!)}
             />
           ))}
         </section>

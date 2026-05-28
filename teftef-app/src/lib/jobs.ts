@@ -39,6 +39,7 @@ export async function fetchJobs(): Promise<JobCardProps[]> {
   }
 
   return jobs.map((job) => ({
+    id: job.id,
     title: job.title,
     budget: job.budget,
     description: job.description ?? job.description_preview ?? '',
@@ -65,6 +66,7 @@ export async function createJob(data: CreateJobPayload) {
 
 export const mockJobs: JobCardProps[] = [
   {
+    id: 'mock-1',
     title: 'Design a landing page for a local fintech startup',
     budget: 18000,
     description:
@@ -74,6 +76,7 @@ export const mockJobs: JobCardProps[] = [
     postedAt: '2 hours ago',
   },
   {
+    id: 'mock-2',
     title: 'Translate product descriptions to Amharic',
     budget: 7500,
     description:
@@ -83,6 +86,7 @@ export const mockJobs: JobCardProps[] = [
     postedAt: 'Today',
   },
   {
+    id: 'mock-3',
     title: 'Social media graphic set for small business campaign',
     budget: 9500,
     description:

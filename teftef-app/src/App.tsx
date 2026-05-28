@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { JobFeedView } from './components/JobFeedView';
 import { PostJobView } from './components/PostJobView';
+import { JobDetailView } from './components/JobDetailView';
 import { verifyTelegramInitData } from './lib/auth';
 import { getSessionToken, setSessionToken } from './lib/session';
 
@@ -22,8 +23,10 @@ declare global {
 
 function App() {
   const queryClient = useQueryClient();
-  const [activeView, setActiveView] = useState<'feed' | 'post'>('feed');
+  const [activeView, setActiveView] = useState<'feed' | 'post' | 'detail'>('feed');
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const isPostView = activeView === 'post';
+  const isDetailView = activeView === 'detail';
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [sessionToken, setSessionTokenState] = useState(getSessionToken());
@@ -61,15 +64,17 @@ function App() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">
-                {isPostView ? 'Post a Job' : 'Find Work'}
+                {isDetailView ? 'Job Details' : isPostView ? 'Post a Job' : 'Find Work'}
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-slate-900">
                 Hello, {name}! 👋
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                {isPostView
-                  ? 'Tell freelancers what you need and save your draft automatically while you type.'
-                  : 'Browse active jobs posted by Ethiopian businesses. This is your first glance at the TefTef job feed.'}
+                {isDetailView
+                  ? 'Review the full job description and submit your proposal.'
+                  : isPostView
+                    ? 'Tell freelancers what you need and save your draft automatically while you type.'
+                    : 'Browse active jobs posted by Ethiopian businesses. This is your first glance at the TefTef job feed.'}
               </p>
             </div>
             <div className="flex flex-wrap gap-3 rounded-3xl bg-slate-50 p-4 shadow-inner">
@@ -106,8 +111,13 @@ function App() {
 
         {isPostView ? (
           <PostJobView onBack={() => setActiveView('feed')} />
+        ) : isDetailView ? (
+          <JobDetailView jobId={selectedJobId!} onBack={() => setActiveView('feed')} />
         ) : (
-          <JobFeedView />
+          <JobFeedView onJobClick={(id) => {
+            setSelectedJobId(id);
+            setActiveView('detail');
+          }} />
         )}
       </div>
     </div>

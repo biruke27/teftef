@@ -1,10 +1,12 @@
 export interface JobCardProps {
+  id?: string;
   title: string;
   budget: number;
   description: string;
   clientName: string;
   status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CLOSED';
   postedAt: string;
+  onClick?: () => void;
 }
 
 const statusStyles: Record<JobCardProps['status'], string> = {
@@ -22,9 +24,13 @@ export function JobCard({
   clientName,
   status,
   postedAt,
+  onClick,
 }: JobCardProps) {
   return (
-    <article className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article
+      onClick={onClick}
+      className={`rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
