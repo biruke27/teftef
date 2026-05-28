@@ -5,7 +5,7 @@
 > Do not try to "improve" DONE features unless explicitly asked.
 > Every completed task should be tested and committed before progress is recorded.
 
-**Last updated:** 2026-05-28 (M2-T1 complete)
+**Last updated:** 2026-05-28 (M3-T2 complete, M4 next)
 
 ---
 
@@ -38,16 +38,16 @@
 
 | Feature | Status | Mission-Task |
 |---|---|---|
-| JobDetailView | NOT_STARTED | M3-T1 |
-| ProposalForm + IndexedDB draft | NOT_STARTED | M3-T1 |
-| Backend POST /proposals | NOT_STARTED | M3-T1 |
-| Backend PATCH /proposals/:id | NOT_STARTED | M3-T1 |
+| JobDetailView | DONE ✅ | M3-T1 |
+| ProposalForm + IndexedDB draft | DONE ✅ | M3-T1 |
+| Backend POST /proposals | DONE ✅ | M3-T1 |
+| Backend PATCH /proposals/:id | DONE ✅ | M3-T2 |
 
 ## Mission 4: OTC Reputation Loops
 
 | Feature | Status | Mission-Task |
 |---|---|---|
-| OTC contact reveal | NOT_STARTED | M3-T1 |
+| OTC contact reveal | DONE ✅ | M3-T2 |
 | P2P feedback loops | NOT_STARTED | M4-T1 |
 | Admin panel (ID-gated, hardcoded) | NOT_STARTED | M4-T2 |
 

@@ -1,27 +1,20 @@
 # Current Task
 
-Mission: M3 — Proposals and OTC Flow
-Task: M3-T1 — JobDetailView + Proposal Form
+Mission: M4 — OTC Reputation Loops
+Task: M4-T1 — P2P Feedback Loops and Trust Score updates
 
-**Goal:** Build a job detail page that shows full job information and lets freelancers submit proposals.
+**Goal:** Build behavioral feedback actions for accepted deals and update trust tiers based on deal confirmation, ghosting, or dispute reports.
 
-**Status:** IN_PROGRESS
+**Status:** NOT_STARTED
 
-**Completed today:**
-- [x] Create reusable `JobCard` component
-- [x] Add mock job feed data to `App.tsx`
-- [x] Render the job feed in a responsive grid layout
-- [x] Verify frontend build succeeds with the new UI
-- [x] Add `JobFeedView` with React Query and backend GET /jobs
-- [x] Add PostJobView with automatic draft saving
-- [x] Connect PostJobView to backend POST /jobs
-- [x] Finalize draft persistence and local dev fallback
-- [x] Implement Telegram auth verify and JWT session flow
-
-**Note:** Every completed task must be tested and committed before moving to the next one.
+**What’s completed:**
+- [x] M3 proposal flow and OTC contact reveal
+- [x] Job posting, job feed, Telegram auth, and proposal submission
+- [x] Client accept/reject flow with job state transition to `IN_PROGRESS`
+- [x] Mutual contact details revealed once a proposal is accepted
 
 **Next session starts at:**
-- M3-T1: Job detail + proposal flow
+- M4-T1: P2P Feedback Loops and Trust Score updates
 
 ---
 
@@ -45,8 +38,9 @@ Task: M3-T1 — JobDetailView + Proposal Form
 5. [x] PostJobView + draft (M1-T3) ✅ DONE
 6. [x] Real backend + DB jobs ✅ DONE
 7. [x] Telegram auth (M2-T1) ✅ DONE
-8. [ ] Proposals (M3-T1) ← YOU ARE HERE NEXT
-9. [ ] Payment + fallback (M4-T1)
-10. [ ] Admin panel (M4-T2)
-11. [ ] Trust score
-12. [ ] Telegram Bot notifications
+8. [x] Proposals (M3-T1) ✅ DONE
+9. [x] OTC contact reveal (M3-T2) ✅ DONE
+10. [ ] P2P feedback loops (M4-T1)
+11. [ ] Admin panel (M4-T2)
+12. [ ] Trust score
+13. [ ] Telegram Bot notifications
