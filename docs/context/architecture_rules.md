@@ -48,6 +48,12 @@ One backend process. No separate services. No microservices. Everything in one F
 - Never run `prisma migrate reset` in production.
 - All `/admin/*` routes verified against hardcoded `ADMIN_IDS` in middleware — not env vars during MVP.
 
+## Tunnel Testing Checklist
+- Confirm the tunnel forwards to the local frontend port, not the backend port.
+- Use relative API URLs in the frontend and configure Vite proxy for backend routes.
+- Verify the public URL loads HTML and can fetch `/jobs` (or other API endpoints) successfully.
+- If the tunnel page is blank, check both the tunnel target port and frontend backend base path.
+
 ---
 
 ## Ethiopian Reality (design defaults, not edge cases)

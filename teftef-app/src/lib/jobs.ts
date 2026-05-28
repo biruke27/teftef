@@ -1,7 +1,7 @@
 import type { JobCardProps } from '../components/JobCard';
 
 export const JOBS_API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
+  import.meta.env.VITE_API_BASE_URL ?? '';
 
 export type CreateJobPayload = {
   title: string;
