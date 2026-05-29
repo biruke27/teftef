@@ -5,7 +5,7 @@
 > Do not try to "improve" DONE features unless explicitly asked.
 > Every completed task should be tested and committed before progress is recorded.
 
-**Last updated:** 2026-05-28 (M3-T2 complete, M4 next)
+**Last updated:** 2026-05-29 (M4 complete)
 
 ---
 
@@ -48,8 +48,8 @@
 | Feature | Status | Mission-Task |
 |---|---|---|
 | OTC contact reveal | DONE ✅ | M3-T2 |
-| P2P feedback loops | NOT_STARTED | M4-T1 |
-| Admin panel (ID-gated, hardcoded) | NOT_STARTED | M4-T2 |
+| P2P feedback loops | DONE ✅ | M4-T1 |
+| Admin panel (ID-gated, hardcoded) | DONE ✅ | M4-T2 |
 
 ## Phase 2 (Post-MVP — Do Not Build Until MVP is Live)
 

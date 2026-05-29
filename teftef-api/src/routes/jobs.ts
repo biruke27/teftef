@@ -167,6 +167,10 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       return reply.status(401).send({ error: 'Unauthorized' });
     }
 
+    if (client.is_banned) {
+      return reply.status(403).send({ error: 'You are banned and cannot post jobs.' });
+    }
+
     const jobCount = await prisma.job.count({
       where: {
         clientId: client.id,

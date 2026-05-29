@@ -7,6 +7,10 @@ export function getTrustTier(score: number) {
   return 'New';
 }
 
+export function clampTrustScore(score: number, delta: number) {
+  return Math.min(100, Math.max(0, score + delta));
+}
+
 export function getPostedLabel(createdAt: Date) {
   const diffMs = Date.now() - createdAt.getTime();
   const minute = 60_000;

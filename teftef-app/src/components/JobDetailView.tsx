@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchJobDetail, submitProposal } from '../lib/proposals';
 import { ProposalForm } from './ProposalForm';
+import { DealActions } from './DealActions';
 import { useUser } from '../hooks/useUser';
 import { useJobProposals, useUpdateProposal } from '../hooks/useJob';
 
@@ -169,19 +170,8 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
                 ) : (
                   <span className="text-xs text-slate-500">No Telegram username available</span>
                 )}
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center gap-1 rounded-full border border-green-200 bg-white px-4 py-2 text-xs font-semibold text-green-700 hover:bg-green-50 transition"
-                >
-                  ✔️ Deal Confirmed
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center gap-1 rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 transition"
-                >
-                  ⚠️ Report Ghosting / Breach
-                </button>
               </div>
+              <DealActions jobId={jobId} jobStatus={job.status} />
             </div>
           )}
 
@@ -217,19 +207,8 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
                         ) : (
                           <span className="text-xs text-slate-500">No Telegram username available</span>
                         )}
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center gap-1 rounded-full border border-green-200 bg-white px-4 py-2 text-xs font-semibold text-green-700 hover:bg-green-50 transition"
-                        >
-                          ✔️ Deal Confirmed
-                        </button>
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center gap-1 rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 transition"
-                        >
-                          ⚠️ Report Ghosting / Breach
-                        </button>
                       </div>
+                      <DealActions jobId={jobId} jobStatus={job.status} />
                     </div>
                   )}
                 </div>

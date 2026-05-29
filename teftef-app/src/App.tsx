@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { JobFeedView } from './components/JobFeedView';
 import { PostJobView } from './components/PostJobView';
 import { JobDetailView } from './components/JobDetailView';
+import { AdminPanelView } from './components/AdminPanelView';
 import { verifyTelegramInitData } from './lib/auth';
 import { getSessionToken, setSessionToken } from './lib/session';
 
@@ -21,8 +22,13 @@ declare global {
   }
 }
 
+function isAdminPath() {
+  return window.location.pathname.replace(/\/$/, '') === '/admin';
+}
+
 function App() {
   const queryClient = useQueryClient();
+  const adminPath = isAdminPath();
   const [activeView, setActiveView] = useState<'feed' | 'post' | 'detail'>('feed');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const isPostView = activeView === 'post';
@@ -56,6 +62,20 @@ function App() {
 
   const name =
     window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name ?? 'there';
+
+  if (adminPath) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-6">
+        {authLoading ? (
+          <p className="text-center text-sm text-slate-500">Verifying Telegram session…</p>
+        ) : authError ? (
+          <p className="text-center text-sm text-red-700">{authError}</p>
+        ) : (
+          <AdminPanelView />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6">

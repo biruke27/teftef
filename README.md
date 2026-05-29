@@ -4,9 +4,9 @@ Telegram Mini App for an Ethiopian OTC freelance marketplace.
 
 ## Current status
 
-- Mission 3 work is complete.
-- Next task: **M4-T1 — P2P Feedback Loops and Trust Score updates**.
-- Phase 2 features such as payments and Telegram bot notifications are not yet started.
+- Mission 4 (OTC reputation loops) is complete: feedback, trust deltas, and admin dispute panel.
+- Admin UI: open **`/admin`** in the Mini App (Telegram ID must be in `teftef-api/src/middleware/admin.ts`).
+- Next up: Telegram bot notifications and other Phase 2 items.
 
 ## Key docs
 
@@ -23,6 +23,6 @@ Telegram Mini App for an Ethiopian OTC freelance marketplace.
 
 ## Next work
 
-1. Implement P2P feedback actions for accepted deals.
-2. Update trust score tiers based on deal confirmation or dispute reports.
-3. Start admin panel for manual review and dispute handling.
+1. Telegram bot notifications for proposals and admin actions.
+2. Reject banned users on `POST /jobs` and `POST /proposals`.
+3. Real-device pass on `/admin` with a `DISPUTED` job in the queue.

@@ -222,8 +222,8 @@ enum PayMethod      { CHAPA TELEBIRR MANUAL }
 | ProposalForm + draft | NOT_STARTED |
 | Backend POST /proposals | NOT_STARTED |
 | OTC contact reveal | NOT_STARTED |
-| P2P feedback loops | NOT_STARTED |
-| Admin panel (ID-gated, hardcoded) | NOT_STARTED |
+| P2P feedback loops | DONE ✅ |
+| Admin panel (ID-gated, hardcoded) | DONE ✅ |
 | Trust score calculation | NOT_STARTED |
 | Telegram Bot notifications | NOT_STARTED |
 

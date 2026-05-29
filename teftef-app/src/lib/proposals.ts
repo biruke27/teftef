@@ -92,6 +92,30 @@ export async function fetchJobProposals(jobId: string): Promise<Proposal[]> {
     const payload = await res.json().catch(() => null);
     throw new Error(payload?.error ?? `Failed to fetch proposals: ${res.status}`);
   }
+  const payload = await res.json();
+  return payload?.proposals ?? [];
+}
+
+export type FeedbackAction = 'CONFIRM' | 'REPORT';
+
+export type JobFeedbackResult = {
+  job: { id: string; status: string };
+  trustUpdated: { clientTier: string; freelancerTier: string };
+};
+
+export async function submitJobFeedback(
+  jobId: string,
+  action: FeedbackAction,
+): Promise<JobFeedbackResult> {
+  const res = await fetch(`${JOBS_API_BASE_URL}/jobs/${jobId}/feedback`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ action }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => null);
+    throw new Error(payload?.error ?? `Failed to submit feedback: ${res.status}`);
+  }
   return res.json();
 }
 

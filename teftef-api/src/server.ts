@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 import { prisma } from './prisma.js';
 import { signJwt, verifyTelegramInitData } from './utils.js';
 import { registerJobRoutes } from './routes/jobs.js';
+import { registerJobFeedbackRoutes } from './routes/job-feedback.js';
 import { registerProposalRoutes } from './routes/proposals.js';
+import { registerAdminRoutes } from './routes/admin.js';
 
 dotenv.config();
 
@@ -92,7 +94,9 @@ async function start() {
   });
 
   await registerJobRoutes(app, JWT_SECRET_STR);
+  await registerJobFeedbackRoutes(app, JWT_SECRET_STR);
   await registerProposalRoutes(app, JWT_SECRET_STR);
+  await registerAdminRoutes(app, JWT_SECRET_STR);
 
   const port = Number(process.env.PORT) || 3000;
   await app.listen({ port, host: '0.0.0.0' });

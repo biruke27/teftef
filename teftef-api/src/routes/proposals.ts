@@ -41,7 +41,7 @@ export async function registerProposalRoutes(app: FastifyInstance, jwtSecret: st
     }
 
     const freelancer = await prisma.user.findUnique({ where: { id: userId } });
-    if (!freelancer || !freelancer.can_freelance) {
+    if (!freelancer || !freelancer.can_freelance || freelancer.is_banned) {
       return reply.status(403).send({ error: 'You do not have permission to submit proposals.' });
     }
 

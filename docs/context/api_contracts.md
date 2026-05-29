@@ -4,7 +4,7 @@
 > Paste the relevant section into every LLM prompt that touches routes or fetch calls.
 > Update after every new or changed route.
 
-**Last updated:** 2026-05-28
+**Last updated:** 2026-05-29 (M4-T2 admin routes)
 
 ---
 
@@ -39,6 +39,17 @@
 - **Auth required:** JWT
 - **Response (200):** `{ id, title, description, budget, status, clientName, clientId, trustTier, postedAt, proposalCount, myProposal?, clientContact?, freelancerContact? }`
 - **Notes:** Returns full job detail. If the current user is the client and an accepted proposal exists, `freelancerContact` is included. If the current user is the freelancer with an accepted proposal, `clientContact` is included.
+- **Response (404):** `{ error: 'Job not found' }`
+
+### POST `/jobs/:id/feedback`
+- **Auth required:** JWT — must be the job client or the accepted freelancer
+- **Request body:** `{ action: 'CONFIRM' | 'REPORT' }`
+- **Valid when:** `job.status === 'IN_PROGRESS'` and an accepted proposal exists
+- **Response (200):** `{ job: { id, status }, trustUpdated: { clientTier, freelancerTier } }`
+- **Side effects on CONFIRM:** Sets `job.status = COMPLETED`. Adds +8 to both client and freelancer `trust_score` (clamped 0–100).
+- **Side effects on REPORT:** Sets `job.status = DISPUTED`. Subtracts 15 from the counterparty's `trust_score` (client reports → freelancer penalized; freelancer reports → client penalized).
+- **Response (400):** Invalid action, job not `IN_PROGRESS`, or no accepted proposal
+- **Response (403):** Caller is not a participant in the deal
 - **Response (404):** `{ error: 'Job not found' }`
 
 ---
@@ -77,7 +88,56 @@ _Any payment gateway or transaction verification routes are Phase 2 work and not
 
 ## Admin
 
-Admin routes are planned but not currently implemented in the backend. All admin work in Phase 1 is manual and gated by hardcoded `ADMIN_IDS` when added.
+All `/admin/*` routes require JWT plus a hardcoded admin Telegram ID in `teftef-api/src/middleware/admin.ts` (not env vars during MVP).
+
+### GET `/admin/me`
+- **Auth required:** JWT + admin
+- **Response (200):** `{ isAdmin: true }`
+- **Response (401):** Missing or invalid JWT
+- **Response (403):** Authenticated user is not an admin
+
+### GET `/admin/disputes`
+- **Auth required:** JWT + admin
+- **Query params:** `page?: number` (default: 1, 20 per page)
+- **Response (200):** `{ disputes: DisputeCard[], total: number, page: number }`
+- **DisputeCard shape:** `{ jobId, title, budget, status, postedAt, client, freelancer? }`
+- **Party shape:** `{ id, username, telegramId, trustTier, is_banned }`
+- **Notes:** Lists jobs with `status = DISPUTED`. `freelancer` is null if no accepted proposal exists.
+
+### GET `/admin/users`
+- **Auth required:** JWT + admin
+- **Query params:** `telegramId` (required) — numeric Telegram user ID string
+- **Response (200):** `{ user: { id, telegramId, username, trust_score, trustTier, is_banned, role_mode, created_at } }`
+- **Response (400):** Missing `telegramId`
+- **Response (404):** User not found
+
+### PATCH `/admin/users/:id`
+- **Auth required:** JWT + admin
+- **Request body:** `{ is_banned: boolean }`
+- **Response (200):** `{ user: { id, telegramId, username, is_banned, trust_score, trustTier } }`
+- **Response (404):** User not found
+
+### POST `/admin/users/:id/trust`
+- **Auth required:** JWT + admin
+- **Request body:** `{ trust_score: number }` — integer 0–100
+- **Response (200):** `{ user: { id, telegramId, username, trust_score, trustTier, is_banned } }`
+- **Response (400):** Invalid `trust_score`
+- **Response (404):** User not found
+
+### PATCH `/admin/jobs/:id`
+- **Auth required:** JWT + admin
+- **Request body:** `{ status: 'COMPLETED' | 'CLOSED' }`
+- **Valid when:** Current job status is `DISPUTED`
+- **Response (200):** `{ job: { id, status } }`
+- **Response (400):** Invalid status or job is not `DISPUTED`
+- **Response (404):** Job not found
+
+### DELETE `/admin/jobs/:id`
+- **Auth required:** JWT + admin
+- **Response (204):** Empty body on success (deletes proposals then job)
+- **Response (404):** Job not found
+
+_Payment verification admin routes are Phase 2 and not implemented._
 
 ---
 
