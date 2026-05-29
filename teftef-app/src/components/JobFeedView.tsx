@@ -3,10 +3,20 @@ import { useJobs } from '../hooks/useJobs';
 
 interface JobFeedViewProps {
   onJobClick: (id: string) => void;
+  authReady: boolean;
 }
 
-export function JobFeedView({ onJobClick }: JobFeedViewProps) {
-  const { data: jobs = [], isLoading, isError, error, refetch } = useJobs();
+export function JobFeedView({ onJobClick, authReady }: JobFeedViewProps) {
+  const { data: jobs = [], isLoading, isError, error, refetch } = useJobs({ enabled: authReady });
+
+  if (!authReady) {
+    return (
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+        <p className="font-semibold text-slate-900">Waiting for Telegram authentication…</p>
+        <p className="mt-2">Open this app inside Telegram or refresh after completing the login flow.</p>
+      </div>
+    );
+  }
 
   if (isLoading && jobs.length === 0) {
     return (

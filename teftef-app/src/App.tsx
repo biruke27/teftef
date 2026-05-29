@@ -134,10 +134,13 @@ function App() {
         ) : isDetailView ? (
           <JobDetailView jobId={selectedJobId!} onBack={() => setActiveView('feed')} />
         ) : (
-          <JobFeedView onJobClick={(id) => {
-            setSelectedJobId(id);
-            setActiveView('detail');
-          }} />
+          <JobFeedView
+            authReady={Boolean(sessionToken)}
+            onJobClick={(id) => {
+              setSelectedJobId(id);
+              setActiveView('detail');
+            }}
+          />
         )}
       </div>
     </div>

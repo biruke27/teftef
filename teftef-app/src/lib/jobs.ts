@@ -1,7 +1,7 @@
 import type { JobCardProps } from '../components/JobCard';
 import { getSessionToken } from './session';
 
-export const JOBS_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+export const JOBS_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
 export type CreateJobPayload = {
   title: string;
