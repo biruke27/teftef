@@ -79,7 +79,14 @@ export function verifyJwt(token: string, secret: string) {
 }
 
 export function createTelegramSecret(botToken: string) {
-  return crypto.createHmac('sha256', botToken).update('WebAppData').digest();
+  // Telegram Official Spec (https://core.telegram.org/bots/webapps):
+  // "Create a secret key using SHA-256 HMAC hash of your Bot Token
+  // and the literal string 'WebAppData'"
+  //
+  // Note: SHA-256 (not SHA-512) for Mini Apps
+  // The literal string "WebAppData" is the HMAC key material
+  // The bot token is the HMAC data input
+  return crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
 }
 
 export function verifyTelegramInitData(initData: string, botToken: string) {
