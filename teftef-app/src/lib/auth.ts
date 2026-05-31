@@ -9,8 +9,10 @@ export type AuthVerifyResponse = {
   sessionToken: string;
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export async function verifyTelegramInitData(initData: string): Promise<AuthVerifyResponse> {
-  const response = await fetch('/auth/verify', {
+  const response = await fetch(`${API_URL}/auth/verify`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
