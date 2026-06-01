@@ -1,0 +1,32 @@
+nohup: ignoring input
+
+> teftef-api@0.1.0 prestart
+> node scripts/fix-dist-imports.js
+
+
+> teftef-api@0.1.0 start
+> node dist/server.js
+
+{"level":30,"time":1780343627396,"pid":20524,"hostname":"TUFA16","msg":"Server listening at http://0.0.0.0:3000"}
+[M0-T2] Server listening on port 3000
+{"level":30,"time":1780343637066,"pid":20524,"hostname":"TUFA16","reqId":"req-1","req":{"method":"GET","url":"/jobs?mock=1","hostname":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":37928},"msg":"incoming request"}
+{"level":30,"time":1780343639189,"pid":20524,"hostname":"TUFA16","reqId":"req-1","res":{"statusCode":200},"responseTime":2123.040151999332,"msg":"request completed"}
+{"level":30,"time":1780343707539,"pid":20524,"hostname":"TUFA16","reqId":"req-2","req":{"method":"GET","url":"/jobs","hostname":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51914},"msg":"incoming request"}
+[M1-T2] /jobs prisma query failed, returning empty feed: PrismaClientKnownRequestError: 
+Invalid `prisma.job.findMany()` invocation:
+
+
+The column `Job.listingType` does not exist in the current database.
+    at $n.handleRequestError (/home/calix/teftef/teftef-api/node_modules/@prisma/client/runtime/library.js:121:7315)
+    at $n.handleAndLogRequestError (/home/calix/teftef/teftef-api/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/home/calix/teftef/teftef-api/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/home/calix/teftef/teftef-api/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async Promise.all (index 0)
+    at async Object.<anonymous> (file:///home/calix/teftef/teftef-api/dist/routes/jobs.js:40:25) {
+  code: 'P2022',
+  clientVersion: '5.22.0',
+  meta: { modelName: 'Job', column: 'Job.listingType' }
+}
+{"level":30,"time":1780343708783,"pid":20524,"hostname":"TUFA16","reqId":"req-2","res":{"statusCode":200},"responseTime":2185.5727679999545,"msg":"request completed"}
+{"level":30,"time":1780343708805,"pid":20524,"hostname":"TUFA16","reqId":"req-3","req":{"method":"GET","url":"/jobs?mock=1","hostname":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":51920},"msg":"incoming request"}
+{"level":30,"time":1780343709113,"pid":20524,"hostname":"TUFA16","reqId":"req-3","res":{"statusCode":200},"responseTime":307.86563200037926,"msg":"request completed"}

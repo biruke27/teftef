@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "ts-node src/server.ts",
+    "dev": "tsc -w & node --watch dist/server.js",
     "build": "prisma generate && tsc",
     "postinstall": "npm run build",
+    "prestart": "node scripts/fix-dist-imports.js",
     "start": "node dist/server.js"
   },
   "dependencies": {

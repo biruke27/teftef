@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+// ensure JS extension in source for correct ESM resolution after build
 import { prisma } from '../../prisma.js';
 import { getAuthPayload } from '../../middleware/auth.js';
 

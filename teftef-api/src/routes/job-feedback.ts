@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
-import { prisma } from '../prisma.js';
-import { clampTrustScore, getTrustTier } from '../utils.js';
-import { getAuthPayload } from '../middleware/auth.js';
+import { prisma } from '../prisma';
+import { clampTrustScore, getTrustTier } from '../utils';
+import { getAuthPayload } from '../middleware/auth';
 
 const CONFIRM_BONUS = 8;
 const REPORT_PENALTY = 15;

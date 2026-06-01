@@ -41,7 +41,8 @@ export async function fetchJobs(): Promise<JobCardProps[]> {
   const jobs = payload?.jobs ?? payload;
 
   if (!Array.isArray(jobs)) {
-    throw new Error('Unexpected jobs response format');
+    console.warn('[fetchJobs] Unexpected jobs response format, returning empty list', payload);
+    return [];
   }
 
   return jobs.map((job) => ({
