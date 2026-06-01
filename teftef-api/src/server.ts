@@ -5,9 +5,11 @@ import dotenv from 'dotenv';
 import { prisma } from './prisma.js';
 import { signJwt, verifyTelegramInitData, createTelegramSecret } from './utils.js';
 import { registerJobRoutes } from './routes/jobs.js';
+import { registerJobHandshakeRoutes } from './routes/jobs/handshake.js';
 import { registerJobFeedbackRoutes } from './routes/job-feedback.js';
 import { registerProposalRoutes } from './routes/proposals.js';
 import { registerAdminRoutes } from './routes/admin.js';
+import { createBlacklistGuard } from './middleware/blacklistGuard.js';
 
 dotenv.config();
 
@@ -35,6 +37,8 @@ const JWT_SECRET_STR = JWT_SECRET;
 async function start() {
   const app = Fastify({ logger: true });
   await app.register(cors, { origin: '*' });
+
+  app.addHook('preHandler', createBlacklistGuard({ jwtSecret: JWT_SECRET_STR }));
 
   app.get('/health', async () => ({
     status: 'ok',
@@ -161,6 +165,7 @@ async function start() {
   });
 
   await registerJobRoutes(app, JWT_SECRET_STR);
+  await registerJobHandshakeRoutes(app, JWT_SECRET_STR);
   await registerJobFeedbackRoutes(app, JWT_SECRET_STR);
   await registerProposalRoutes(app, JWT_SECRET_STR);
   await registerAdminRoutes(app, JWT_SECRET_STR);

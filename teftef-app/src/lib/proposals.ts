@@ -13,8 +13,13 @@ export type JobDetail = {
   title: string;
   description: string;
   budget: number;
+  listingType: 'FREELANCE' | 'FULL_TIME';
+  payType: 'FIXED' | 'RANGE' | 'NEGOTIABLE';
+  minPay: number | null;
+  maxPay: number | null;
   status: string;
   clientName: string;
+  clientUsername?: string | null;
   trustTier: string;
   postedAt: string;
   proposalCount: number;
@@ -33,6 +38,10 @@ export type JobDetail = {
     username: string | null;
     telegramId: string;
     proposalId: string;
+  };
+  pendingMatchCandidate?: {
+    username: string | null;
+    telegramId: string;
   };
 };
 

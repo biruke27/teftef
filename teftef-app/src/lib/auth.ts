@@ -1,3 +1,5 @@
+import { getSessionToken } from './session';
+
 export type AuthVerifyResponse = {
   user: {
     id: string;
@@ -23,6 +25,25 @@ export async function verifyTelegramInitData(initData: string): Promise<AuthVeri
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
     throw new Error(payload?.error ?? `Auth verify failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateMasterConsent(accepted: boolean) {
+  const token = getSessionToken();
+  const response = await fetch(`${API_URL}/auth/consent`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ accepted }),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error ?? `Consent update failed: ${response.status}`);
   }
 
   return response.json();

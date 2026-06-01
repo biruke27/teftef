@@ -7,6 +7,12 @@ export type CreateJobPayload = {
   title: string;
   description: string;
   budget: number;
+  listingType?: 'FREELANCE' | 'FULL_TIME';
+  payType?: 'FIXED' | 'RANGE' | 'NEGOTIABLE';
+  minPay?: number | null;
+  maxPay?: number | null;
+  fullName?: string;
+  nationalId?: string;
 };
 
 function authHeaders(): HeadersInit {
@@ -41,7 +47,10 @@ export async function fetchJobs(): Promise<JobCardProps[]> {
   return jobs.map((job) => ({
     id: job.id,
     title: job.title,
-    budget: job.budget,
+    listingType: job.listingType ?? 'FREELANCE',
+    payType: job.payType ?? 'FIXED',
+    minPay: job.minPay ?? job.budget ?? 0,
+    maxPay: job.maxPay ?? null,
     description: job.description ?? job.description_preview ?? '',
     clientName: job.clientName ?? 'Client',
     status: job.status,
@@ -68,7 +77,10 @@ export const mockJobs: JobCardProps[] = [
   {
     id: 'mock-1',
     title: 'Design a landing page for a local fintech startup',
-    budget: 18000,
+    listingType: 'FREELANCE',
+    payType: 'FIXED',
+    minPay: 18000,
+    maxPay: null,
     description:
       'Create a clean, fast landing page for a digital savings app. Focus on simple copy, strong CTA, and mobile-first layout.',
     clientName: 'Ethiopia FinTech',
@@ -78,7 +90,10 @@ export const mockJobs: JobCardProps[] = [
   {
     id: 'mock-2',
     title: 'Translate product descriptions to Amharic',
-    budget: 7500,
+    listingType: 'FREELANCE',
+    payType: 'RANGE',
+    minPay: 7500,
+    maxPay: 10000,
     description:
       'Translate 20 short product descriptions into natural Amharic for a new marketplace listing.',
     clientName: 'Marketplace Team',
@@ -88,7 +103,10 @@ export const mockJobs: JobCardProps[] = [
   {
     id: 'mock-3',
     title: 'Social media graphic set for small business campaign',
-    budget: 9500,
+    listingType: 'FULL_TIME',
+    payType: 'NEGOTIABLE',
+    minPay: null,
+    maxPay: null,
     description:
       'Design 5 branded social graphics for Instagram and Facebook with local market style.',
     clientName: 'Sheba Creative',

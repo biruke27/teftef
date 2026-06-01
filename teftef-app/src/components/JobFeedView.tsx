@@ -66,12 +66,7 @@ export function JobFeedView({ onJobClick, authReady }: JobFeedViewProps) {
           {jobs.map((job, index) => (
             <JobCard
               key={`${job.title}-${index}`}
-              title={job.title}
-              budget={job.budget}
-              description={job.description}
-              clientName={job.clientName}
-              status={job.status}
-              postedAt={job.postedAt}
+              {...job}
               onClick={() => onJobClick(job.id!)}
             />
           ))}

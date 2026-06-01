@@ -1,34 +1,56 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createJob } from '../lib/jobs';
 import { clearDraft, loadDraft, saveDraft } from '../lib/draftStorage';
+import { useUser } from '../hooks/useUser';
+import { updateMasterConsent } from '../lib/auth';
+import { JobTypeSelector, type ListingType } from './JobTypeSelector';
+import { PolymorphicPricingController } from './PolymorphicPricingController';
+import { MasterConsentGateway, MicroConsentBanner, AccountabilityCheck } from './LegalConsentSuite';
 
 const DRAFT_KEY = 'post-job';
 
 type DraftData = {
   title: string;
   description: string;
-  budget: string;
+  payType: 'FIXED' | 'RANGE' | 'NEGOTIABLE';
+  minPay: number | null;
+  maxPay: number | null;
+  listingType?: ListingType;
 };
 
 export function PostJobView({ onBack }: { onBack: () => void }) {
+  const { data: user } = useUser();
+  const isMounted = useRef(true);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [budget, setBudget] = useState('');
+  const [payType, setPayType] = useState<'FIXED' | 'RANGE' | 'NEGOTIABLE'>('FIXED');
+  const [minPay, setMinPay] = useState<number | null>(null);
+  const [maxPay, setMaxPay] = useState<number | null>(null);
+  const [listingType, setListingType] = useState<ListingType>('FREELANCE');
+  const [fullName, setFullName] = useState('');
+  const [nationalId, setNationalId] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [draftSaved, setDraftSaved] = useState(false);
-  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [legalAccepted, setLegalAccepted] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
+  useEffect(() => {
     loadDraft<DraftData>(DRAFT_KEY).then((draft) => {
-      if (draft?.title || draft?.description || draft?.budget) {
+      if (draft) {
         setTitle(draft.title ?? '');
         setDescription(draft.description ?? '');
-        setBudget(draft.budget ?? '');
-        setDraftSaved(true);
-        setDraftLoaded(true);
+        setPayType(draft.payType ?? 'FIXED');
+        setMinPay(draft.minPay ?? null);
+        setMaxPay(draft.maxPay ?? null);
+        setListingType(draft.listingType ?? 'FREELANCE');
       }
     });
   }, []);
@@ -37,21 +59,22 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
     setDraftSaved(false);
     const timer = window.setTimeout(async () => {
       try {
-        if (title || description || budget) {
-          await saveDraft(DRAFT_KEY, { title, description, budget });
+        if (title || description || minPay !== null || maxPay !== null) {
+          await saveDraft(DRAFT_KEY, { title, description, payType, minPay, maxPay, listingType });
           setDraftSaved(true);
         } else {
           await clearDraft(DRAFT_KEY);
         }
       } catch (error) {
-        console.error('[M1-T3] draft persistence failed:', error);
+        console.error('[M1-T3] Draft persistence failed:', error);
       }
     }, 500);
-
     return () => window.clearTimeout(timer);
-  }, [title, description, budget]);
+  }, [title, description, payType, minPay, maxPay, listingType]);
 
-  const canPost = Boolean(title && description && budget);
+  const isIdentityVerified = user?.nationalId !== null && user?.nationalId !== undefined;
+  const isIdentityFormFilled = !isIdentityVerified ? (fullName.trim().length > 2 && nationalId.trim().length > 5) : true;
+  const canPost = Boolean(title && description && (payType === 'NEGOTIABLE' || minPay !== null)) && isIdentityFormFilled && legalAccepted;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,7 +83,7 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
 
     if (!canPost) {
       setStatus('error');
-      setMessage('Please complete the form and open this app from Telegram.');
+      setMessage('Please complete all fields, including identity verification and legal consent.');
       return;
     }
 
@@ -68,21 +91,29 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
       await createJob({
         title,
         description,
-        budget: Number(budget),
-      });
-
+        budget: minPay ?? 0,
+        listingType,
+        payType,
+        minPay,
+        maxPay,
+        ...(!isIdentityVerified && {
+          fullName: fullName.trim(),
+          nationalId: nationalId.trim()
+        })
+      } as any);
       await clearDraft(DRAFT_KEY);
       await queryClient.invalidateQueries({ queryKey: ['jobs'] });
 
-      setStatus('success');
-      setMessage('Job posted successfully.');
-      setTitle('');
-      setDescription('');
-      setBudget('');
+      if (isMounted.current) {
+        setStatus('success');
+        setMessage('Job posted successfully.');
+      }
       onBack();
     } catch (error) {
-      setStatus('error');
-      setMessage((error as Error)?.message ?? 'Unable to submit job.');
+      if (isMounted.current) {
+        setStatus('error');
+        setMessage((error as Error)?.message ?? 'Unable to submit job request.');
+      }
     }
   }
 
@@ -96,76 +127,69 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
             Describe the work, set a budget, and save the draft automatically while you type.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-        >
+        <button onClick={onBack} className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
           Back to job feed
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <JobTypeSelector listingType={listingType} onTypeChange={setListingType} />
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-slate-700">
+          <label className="space-y-2 text-sm font-medium text-slate-700 block">
             Job title
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="E.g. Build a small business booking page"
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-            />
+            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="E.g. Build a small business booking page" className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" />
           </label>
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            Budget (ETB)
-            <input
-              type="number"
-              min="0"
-              value={budget}
-              onChange={(event) => setBudget(event.target.value)}
-              placeholder="15000"
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-            />
-          </label>
+          <PolymorphicPricingController
+            listingType={listingType}
+            onPayloadChange={(payload: { payType: 'FIXED' | 'RANGE' | 'NEGOTIABLE'; minPay: number | null; maxPay: number | null }) => {
+              setPayType(payload.payType);
+              setMinPay(payload.minPay);
+              setMaxPay(payload.maxPay);
+            }}
+          />
         </div>
 
-        <label className="space-y-2 text-sm font-medium text-slate-700">
+        <label className="space-y-2 text-sm font-medium text-slate-700 block">
           Job description
-          <textarea
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Explain the work, deliverables, and timeline."
-            rows={8}
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
-          />
+          <textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Explain the work, deliverables, and timeline." rows={6} className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" />
         </label>
 
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="text-sm text-slate-500">Your draft is saved automatically after 500ms of inactivity.</p>
-            {draftSaved ? (
-              <p className="text-sm text-slate-600">
-                {draftLoaded ? 'Draft restored from browser storage.' : 'Draft saved locally.'}
-              </p>
-            ) : null}
-          </div>
+        <MasterConsentGateway
+          acceptedMasterTerms={user?.acceptedMasterTerms ?? false}
+          onAccept={updateMasterConsent}
+        />
 
-          <button
-            type="submit"
-            disabled={!canPost || status === 'submitting'}
-            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+        {!isIdentityVerified && (
+          <div className="p-5 bg-slate-50 border-l-4 border-blue-600 rounded-r-2xl space-y-4 animate-in fade-in duration-300">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Identity Details Required</h4>
+              <p className="text-xs text-slate-500">TefTef requires a verified name and digital identification to open escrow parameters for your very first post.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Legal Name" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500" />
+              <input type="text" required value={nationalId} onChange={(e) => setNationalId(e.target.value)} placeholder="National ID / Digital ID String" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500" />
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <MicroConsentBanner />
+          <AccountabilityCheck accepted={legalAccepted} onToggle={setLegalAccepted} />
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-slate-400">{draftSaved ? '✓ Draft saved locally' : 'Saving...'}</span>
+          <button type="submit" disabled={!canPost || status === 'submitting'} className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
             {status === 'submitting' ? 'Posting…' : 'Post job'}
           </button>
         </div>
 
-        {message ? (
-          <div
-            className={`rounded-3xl px-4 py-3 text-sm ${status === 'error' ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'}`}
-          >
+        {message && (
+          <div className={`rounded-2xl px-4 py-3 text-sm border ${status === 'error' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
             {message}
           </div>
-        ) : null}
+        )}
       </form>
     </div>
   );

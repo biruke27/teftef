@@ -1,16 +1,23 @@
+import { PayBadgeRenderer } from './PayBadgeRenderer';
+import type { ListingType } from './JobTypeSelector';
+
 export interface JobCardProps {
   id?: string;
   title: string;
-  budget: number;
+  listingType: ListingType;
+  payType: 'FIXED' | 'RANGE' | 'NEGOTIABLE';
+  minPay: number | null;
+  maxPay: number | null;
   description: string;
   clientName: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CLOSED';
+  status: 'OPEN' | 'PENDING_MATCH' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CLOSED';
   postedAt: string;
   onClick?: () => void;
 }
 
 const statusStyles: Record<JobCardProps['status'], string> = {
   OPEN: 'bg-green-100 text-green-800',
+  PENDING_MATCH: 'bg-amber-100 text-amber-800',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
   COMPLETED: 'bg-gray-100 text-gray-800',
   DISPUTED: 'bg-yellow-100 text-yellow-800',
@@ -19,7 +26,10 @@ const statusStyles: Record<JobCardProps['status'], string> = {
 
 export function JobCard({
   title,
-  budget,
+  listingType,
+  payType,
+  minPay,
+  maxPay,
   description,
   clientName,
   status,
@@ -48,7 +58,7 @@ export function JobCard({
       </p>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
-        <span>Budget: ETB {budget.toLocaleString()}</span>
+        <PayBadgeRenderer job={{ listingType, payType, minPay, maxPay }} />
         <span>Posted {postedAt}</span>
       </div>
     </article>

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchJobDetail, submitProposal } from '../lib/proposals';
 import { ProposalForm } from './ProposalForm';
 import { DealActions } from './DealActions';
+import { PayBadgeRenderer } from './PayBadgeRenderer';
 import { useUser } from '../hooks/useUser';
 import { useJobProposals, useUpdateProposal } from '../hooks/useJob';
 
@@ -128,9 +129,17 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
                 {job.trustTier}
               </span>
             </div>
-            <div className="ml-auto text-right">
+            <div className="ml-auto text-right space-y-2">
               <p className="text-xs text-slate-500 uppercase tracking-wider">Budget</p>
               <p className="text-lg font-bold text-slate-900">ETB {job.budget.toLocaleString()}</p>
+              <PayBadgeRenderer
+                job={{
+                  listingType: job.listingType,
+                  payType: job.payType,
+                  minPay: job.minPay,
+                  maxPay: job.maxPay,
+                }}
+              />
             </div>
           </div>
 
@@ -144,6 +153,47 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
               <span>{job.proposalCount} proposal{job.proposalCount !== 1 ? 's' : ''}</span>
             </div>
           </div>
+
+          {job.status === 'PENDING_MATCH' && (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-slate-900">Pending match verification</h3>
+              <p className="text-sm leading-6 text-slate-600">
+                Cross-check the plain-text Name and ID string listed on this dashboard against a physical smartphone photo of the ID card inside your external Telegram private message thread before confirming the contract.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Client contact</p>
+                  {job.clientUsername ? (
+                    <a
+                      href={`https://t.me/${job.clientUsername}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-words text-sm font-medium text-slate-900 underline underline-offset-2"
+                    >
+                      {`t.me/${job.clientUsername}`}
+                    </a>
+                  ) : (
+                    <p className="text-sm text-slate-500">Client Telegram username unavailable.</p>
+                  )}
+                </div>
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Candidate contact</p>
+                  {job.pendingMatchCandidate?.username ? (
+                    <a
+                      href={`https://t.me/${job.pendingMatchCandidate.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-words text-sm font-medium text-slate-900 underline underline-offset-2"
+                    >
+                      {`t.me/${job.pendingMatchCandidate.username}`}
+                    </a>
+                  ) : (
+                    <p className="text-sm text-slate-500">Candidate Telegram username unavailable.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {submitError && (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

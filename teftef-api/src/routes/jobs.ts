@@ -37,6 +37,10 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
         description: job.description.slice(0, 160),
         budget: job.budget,
         status: job.status,
+        listingType: job.listingType,
+        payType: job.payType,
+        minPay: job.minPay ?? job.budget,
+        maxPay: job.maxPay ?? null,
         trustTier: getTrustTier(job.client.trust_score),
         postedAt: getPostedLabel(job.created_at),
         proposalCount: job._count.proposals,
@@ -76,6 +80,20 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
     let freelancerContact: { username: string | null; telegramId: string; proposalId: string } | undefined;
     let myProposal: { id: string; amount: number; message: string; status: string } | undefined;
     let clientContact: { username: string | null; telegramId: string } | undefined;
+    let pendingMatchCandidate: { username: string | null; telegramId: string } | undefined;
+
+    if (job.status === 'PENDING_MATCH') {
+      const matchingProposal = await prisma.proposal.findFirst({
+        where: { jobId: id, status: 'MATCHING' },
+        include: { freelancer: true },
+      });
+      if (matchingProposal) {
+        pendingMatchCandidate = {
+          username: matchingProposal.freelancer.username,
+          telegramId: matchingProposal.freelancer.telegramId,
+        };
+      }
+    }
 
     if (job.clientId === userId) {
       const acceptedProposal = await prisma.proposal.findFirst({
@@ -114,8 +132,13 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       title: job.title,
       description: job.description,
       budget: job.budget,
+      listingType: job.listingType,
+      payType: job.payType,
+      minPay: job.minPay ?? job.budget,
+      maxPay: job.maxPay ?? null,
       status: job.status,
       clientName: job.client.username ?? 'Client',
+      clientUsername: job.client.username,
       clientId: job.clientId,
       trustTier: getTrustTier(job.client.trust_score),
       postedAt: getPostedLabel(job.created_at),
@@ -123,6 +146,7 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       myProposal,
       clientContact,
       freelancerContact,
+      pendingMatchCandidate,
     };
   });
 
@@ -139,11 +163,41 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       title?: string;
       description?: string;
       budget?: number;
+      listingType?: 'FREELANCE' | 'FULL_TIME';
+      payType?: 'FIXED' | 'RANGE' | 'NEGOTIABLE';
+      minPay?: number | null;
+      maxPay?: number | null;
+      fullName?: string;
+      nationalId?: string;
     };
 
     const title = body.title?.trim() ?? '';
     const description = body.description?.trim() ?? '';
     const budget = Number(body.budget ?? 0);
+    const listingType = body.listingType === 'FULL_TIME' ? 'FULL_TIME' : 'FREELANCE';
+    const payType = body.payType === 'RANGE' || body.payType === 'NEGOTIABLE' ? body.payType : 'FIXED';
+    const rawMinPay = body.minPay;
+    const rawMaxPay = body.maxPay;
+
+    let minPay: number | null = null;
+    let maxPay: number | null = null;
+
+    if (payType === 'FIXED') {
+      minPay = budget;
+      maxPay = null;
+    }
+
+    if (payType === 'RANGE') {
+      const safeMinPay = Number(rawMinPay ?? NaN);
+      const safeMaxPay = Number(rawMaxPay ?? NaN);
+      minPay = Number.isFinite(safeMinPay) ? safeMinPay : null;
+      maxPay = Number.isFinite(safeMaxPay) ? safeMaxPay : null;
+    }
+
+    if (payType === 'NEGOTIABLE') {
+      minPay = null;
+      maxPay = null;
+    }
 
     if (title.length < 5) {
       return reply.status(400).send({ error: 'Title must be at least 5 characters.' });
@@ -155,6 +209,16 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
 
     if (!Number.isFinite(budget) || budget <= 0) {
       return reply.status(400).send({ error: 'Budget must be greater than 0.' });
+    }
+
+    if (payType === 'RANGE') {
+      if (minPay === null || maxPay === null || !Number.isFinite(minPay) || !Number.isFinite(maxPay) || minPay <= 0 || maxPay <= 0 || minPay > maxPay) {
+        return reply.status(400).send({ error: 'Range pay requires valid minPay and maxPay values.' });
+      }
+    }
+
+    if (payType === 'FIXED' && !Number.isFinite(minPay)) {
+      return reply.status(400).send({ error: 'Fixed pay requires a valid amount.' });
     }
 
     const userId = authPayload.userId as string | undefined;
@@ -189,6 +253,10 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
         title,
         description,
         budget,
+        listingType,
+        payType,
+        minPay,
+        maxPay,
         clientId: client.id,
       },
     });
