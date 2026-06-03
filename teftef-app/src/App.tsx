@@ -87,7 +87,7 @@ function App() {
                 {isDetailView ? 'Job Details' : isPostView ? 'Post a Job' : 'Find Work'}
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-                Hello, {name}! 
+                Hello, {name}!
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 {isDetailView

@@ -44,10 +44,10 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
   const { data: proposals, isLoading: isProposalsLoading } = useJobProposals(jobId, isClient);
   const { mutateAsync: updateProposal, isPending: isUpdating } = useUpdateProposal(jobId);
 
-  const handleSubmit = async (amount: number, message: string) => {
+  const handleSubmit = async (amount: number, message: string, verification?: { fullName: string; nationalId: string; acceptedMasterTerms: boolean }) => {
     setSubmitError(null);
     try {
-      await submitProposal({ jobId, amount, message });
+      await submitProposal({ jobId, amount, message, ...verification });
       setSubmitted(true);
       setShowForm(false);
       await queryClient.invalidateQueries({ queryKey: ['job', jobId] });

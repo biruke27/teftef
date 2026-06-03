@@ -64,7 +64,7 @@ export async function fetchJobDetail(jobId: string): Promise<JobDetail> {
   return res.json();
 }
 
-export async function submitProposal(data: { jobId: string; amount: number; message: string }) {
+export async function submitProposal(data: { jobId: string; amount: number; message: string; fullName?: string; nationalId?: string; acceptedMasterTerms?: boolean }) {
   const res = await fetch(`${JOBS_API_BASE_URL}/proposals`, {
     method: 'POST',
     headers: authHeaders(),

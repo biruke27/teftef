@@ -1,43 +1,28 @@
-import React, { useState } from 'react';
+
 
 /**
  * TYPES
  */
 interface MasterConsentProps {
-  acceptedMasterTerms: boolean;
-  onAccept: (accepted: boolean) => Promise<void>;
+  isChecked: boolean;
+  onToggle: (checked: boolean) => void;
 }
 
-interface AccountabilityCheckProps {
+interface AccountabilityWallProps {
   accepted: boolean;
   onToggle: (accepted: boolean) => void;
+  buttonLabel?: string;
+  disabled?: boolean;
+  isSubmitting?: boolean;
+  onSubmit?: () => void;
 }
 
 /**
  * PART 1: MASTER CONSENT GATEWAY
- * A one-time roadblock for major legal sign-off.
- * Displays a dense, scrollable area for terms when user.acceptedMasterTerms is false.
+ * Scrollable legal terms with a checkbox toggle.
+ * Pure UI component — does not fire network calls on check.
  */
-export const MasterConsentGateway = ({ acceptedMasterTerms, onAccept }: MasterConsentProps) => {
-  const [isChecked, setIsChecked] = useState(false);
-
-  if (acceptedMasterTerms) return null;
-
-  const handleToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    // Optimistic update to prevent UI freezing
-    setIsChecked(checked);
-
-    if (checked) {
-      try {
-        await onAccept(true);
-      } catch (error) {
-        console.error('[Legal-T1] Master consent update failed:', error);
-        setIsChecked(false); // Revert on failure
-      }
-    }
-  };
-
+export const MasterConsentGateway = ({ isChecked, onToggle }: MasterConsentProps) => {
   return (
     <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 animate-in fade-in duration-300">
       <div className="flex items-center gap-2">
@@ -65,7 +50,7 @@ export const MasterConsentGateway = ({ acceptedMasterTerms, onAccept }: MasterCo
           type="checkbox"
           className="mt-1 w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
           checked={isChecked}
-          onChange={handleToggle}
+          onChange={(e) => onToggle(e.target.checked)}
         />
         <span className="text-xs text-slate-600 leading-tight group-hover:text-slate-900 transition">
           I have read and accept the Unified Terms, Risk Disclosure, and Privacy Policy.
@@ -77,7 +62,7 @@ export const MasterConsentGateway = ({ acceptedMasterTerms, onAccept }: MasterCo
 
 /**
  * PART 2: MICRO-CONSENT BANNER
- * High-visibility amber disclaimer for high-intent action areas.
+ * Static disclaimer text. No interaction required.
  */
 export const MicroConsentBanner = () => {
   return (
@@ -93,21 +78,42 @@ export const MicroConsentBanner = () => {
 };
 
 /**
- * PART 3: ACCOUNTABILITY CHECKBOX CONTROLLER
- * Enforces a legal waiver prior to finalizing a match or submission.
+ * PART 3: ACCOUNTABILITY ACTION WALL
+ * Checkbox + integrated submit button. The button is disabled until the checkbox is toggled.
+ * Can render as a standalone checkbox or as a full action wall with a submit button.
  */
-export const AccountabilityCheck = ({ accepted, onToggle }: AccountabilityCheckProps) => {
+export const AccountabilityWall = ({
+  accepted,
+  onToggle,
+  buttonLabel = 'Post Job',
+  disabled = false,
+  isSubmitting = false,
+  onSubmit,
+}: AccountabilityWallProps) => {
   return (
-    <label className="flex items-start gap-3 cursor-pointer group">
-      <input
-        type="checkbox"
-        className="mt-1 w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
-        checked={accepted}
-        onChange={(e) => onToggle(e.target.checked)}
-      />
-      <span className="text-xs text-slate-500 leading-relaxed group-hover:text-slate-800 transition">
-        I understand that finalizing this match legally binds my identity to this transaction under our master agreement, and authorizes the release of my ID details to my counterparty if a contract breach or fraud occurs.
-      </span>
-    </label>
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <label className="flex items-start gap-3 cursor-pointer group">
+        <input
+          type="checkbox"
+          className="mt-1 w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+          checked={accepted}
+          onChange={(e) => onToggle(e.target.checked)}
+        />
+        <span className="text-xs text-slate-500 leading-relaxed group-hover:text-slate-800 transition">
+          I understand that finalizing this action legally binds my identity to this transaction under our master agreement, and authorizes the release of my ID details to my counterparty if a contract breach or fraud occurs.
+        </span>
+      </label>
+
+      {onSubmit && (
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={!accepted || disabled || isSubmitting}
+          className="w-full rounded-full bg-slate-900 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? 'Processing...' : buttonLabel}
+        </button>
+      )}
+    </div>
   );
 };

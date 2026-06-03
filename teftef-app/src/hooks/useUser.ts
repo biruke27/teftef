@@ -8,6 +8,7 @@ interface User {
   username?: string;
   nationalId: string | null;
   fullName: string | null;
+  acceptedMasterTerms: boolean;
   role_mode: 'CLIENT' | 'FREELANCER';
   [key: string]: any;
 }

@@ -9,6 +9,7 @@ import { registerJobHandshakeRoutes } from './routes/jobs/handshake.js';
 import { registerJobFeedbackRoutes } from './routes/job-feedback.js';
 import { registerProposalRoutes } from './routes/proposals.js';
 import { registerAdminRoutes } from './routes/admin.js';
+import { registerUserProfileRoutes } from './routes/userProfile.js';
 import { createBlacklistGuard } from './middleware/blacklistGuard.js';
 
 dotenv.config();
@@ -146,6 +147,9 @@ async function start() {
         userId: user.id,
         telegramId: user.telegramId,
         username: user.username ?? null,
+        nationalId: user.nationalId ?? null,
+        fullName: user.fullName ?? null,
+        acceptedMasterTerms: user.acceptedMasterTerms,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
       },
@@ -169,6 +173,7 @@ async function start() {
   await registerJobFeedbackRoutes(app, JWT_SECRET_STR);
   await registerProposalRoutes(app, JWT_SECRET_STR);
   await registerAdminRoutes(app, JWT_SECRET_STR);
+  await registerUserProfileRoutes(app, JWT_SECRET_STR);
 
   const port = Number(process.env.PORT) || 3000;
   await app.listen({ port, host: '0.0.0.0' });

@@ -274,6 +274,15 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
     }
 
     try {
+      // Update user identity fields if provided and not already set
+      const profileUpdate: Record<string, string | boolean> = {};
+      if (body.fullName && !client.fullName) profileUpdate.fullName = body.fullName.trim();
+      if (body.nationalId && !client.nationalId) profileUpdate.nationalId = body.nationalId.trim();
+      if (Object.keys(profileUpdate).length > 0) {
+        profileUpdate.acceptedMasterTerms = true;
+        await prisma.user.update({ where: { id: client.id }, data: profileUpdate });
+      }
+
       const job = await prisma.job.create({
         data: {
           title,

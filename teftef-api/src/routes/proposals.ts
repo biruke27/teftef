@@ -17,6 +17,9 @@ export async function registerProposalRoutes(app: FastifyInstance, jwtSecret: st
       jobId?: string;
       amount?: number;
       message?: string;
+      fullName?: string;
+      nationalId?: string;
+      acceptedMasterTerms?: boolean;
     };
 
     const jobId = body.jobId?.trim();
@@ -59,6 +62,15 @@ export async function registerProposalRoutes(app: FastifyInstance, jwtSecret: st
     }
 
     try {
+      // Update freelancer identity fields if provided and not already set
+      const profileUpdate: Record<string, string | boolean> = {};
+      if (body.fullName && !freelancer.fullName) profileUpdate.fullName = body.fullName.trim();
+      if (body.nationalId && !freelancer.nationalId) profileUpdate.nationalId = body.nationalId.trim();
+      if (body.acceptedMasterTerms && !freelancer.acceptedMasterTerms) profileUpdate.acceptedMasterTerms = true;
+      if (Object.keys(profileUpdate).length > 0) {
+        await prisma.user.update({ where: { id: freelancer.id }, data: profileUpdate });
+      }
+
       const proposal = await prisma.proposal.create({
         data: {
           jobId,
