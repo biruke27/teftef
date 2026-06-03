@@ -4,6 +4,7 @@ import { getTrustTier, getPostedLabel } from '../utils.js';
 import { getAuthPayload } from '../middleware/auth.js';
 
 export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string) {
+  // 1. GET /jobs - Fetch and page active open jobs
   app.get('/jobs', async (request, reply) => {
     try {
       getAuthPayload(request, jwtSecret);
@@ -16,30 +17,9 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
     const take = 20;
     const skip = (currentPage - 1) * take;
 
-    // Test-only: return a mocked job when ?mock=1 is provided.
-    // This helps validate frontend empty vs populated states without DB changes.
-    const _mockQ = (request.query as any).mock;
-    if (_mockQ === '1' || _mockQ === 1 || _mockQ === 'true' || _mockQ === true) {
-      const sample = {
-        id: 'mock-job-1',
-        title: 'Mock Full-Stack Developer Needed',
-        description: 'Build a small React + Fastify MVP for testing.',
-        budget: 5000,
-        status: 'OPEN',
-        listingType: 'FREELANCE',
-        payType: 'FIXED',
-        minPay: 5000,
-        maxPay: null,
-        trustTier: getTrustTier(75),
-        postedAt: getPostedLabel(new Date()),
-        proposalCount: 0,
-        clientName: 'MockClient',
-      };
-      return reply.status(200).send({ jobs: [sample], total: 1, page: currentPage });
-    }
-
     let jobs: any[] = [];
     let total = 0;
+
     try {
       const res = await Promise.all([
         prisma.job.findMany({
@@ -57,11 +37,10 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       jobs = res[0] ?? [];
       total = Number(res[1] ?? 0);
     } catch (dbErr) {
-      console.error('[M1-T2] /jobs prisma query failed, returning empty feed:', dbErr);
+      console.error('[Production API] /jobs database fetch failed:', dbErr);
       return reply.status(200).send({ jobs: [], total: 0, page: currentPage });
     }
-    // Map results defensively — if a single job record is malformed
-    // we avoid throwing and instead return an empty list (safe fallback)
+
     try {
       const mapped = jobs.map((job) => {
         const desc = String(job.description ?? '');
@@ -79,19 +58,19 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
           maxPay: job.maxPay ?? null,
           trustTier: getTrustTier(client.trust_score),
           postedAt: getPostedLabel(job.created_at),
-          proposalCount: job._count.proposals,
+          proposalCount: job._count?.proposals ?? 0, // Protected fallback
           clientName: client.username ?? 'Client',
         };
       });
 
       return reply.status(200).send({ jobs: mapped, total, page: currentPage });
     } catch (error) {
-      // Log and return a safe, empty feed rather than allowing a 500 to bubble up
-      console.error('[M1-T2] /jobs mapping failed, returning empty list:', error);
+      console.error('[Production API] /jobs data mapping execution failed:', error);
       return reply.status(200).send({ jobs: [], total: 0, page: currentPage });
     }
   });
 
+  // 2. GET /jobs/:id - Fetch individual job specifications with contextual contacts
   app.get('/jobs/:id', async (request, reply) => {
     let authPayload;
     try {
@@ -183,7 +162,7 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       clientId: job.clientId,
       trustTier: getTrustTier(job.client.trust_score),
       postedAt: getPostedLabel(job.created_at),
-      proposalCount: job._count.proposals,
+      proposalCount: job._count?.proposals ?? 0, // Protected fallback
       myProposal,
       clientContact,
       freelancerContact,
@@ -191,9 +170,9 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
     };
   });
 
+  // 3. POST /jobs - Create a new job listing
   app.post('/jobs', async (request, reply) => {
     let authPayload;
-
     try {
       authPayload = getAuthPayload(request, jwtSecret);
     } catch {
@@ -289,19 +268,23 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       return reply.status(429).send({ error: 'Too many jobs. Maximum 3 jobs per hour.' });
     }
 
-    const job = await prisma.job.create({
-      data: {
-        title,
-        description,
-        budget,
-        listingType,
-        payType,
-        minPay,
-        maxPay,
-        clientId: client.id,
-      },
-    });
-
-    return reply.status(201).send({ job });
+    try {
+      const job = await prisma.job.create({
+        data: {
+          title,
+          description,
+          budget,
+          listingType,
+          payType,
+          minPay,
+          maxPay,
+          clientId: client.id,
+        },
+      });
+      return reply.status(201).send({ job });
+    } catch (createErr) {
+      console.error('[Production API Error] Failed to write Job entry into Prisma:', createErr);
+      return reply.status(500).send({ error: 'Internal Server Error while inserting job record.' });
+    }
   });
 }
