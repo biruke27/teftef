@@ -7,6 +7,8 @@ export type AuthVerifyResponse = {
     username?: string;
     role_mode: string;
     trust_score: number;
+    nationalId?: string | null;
+    acceptedMasterTerms?: boolean;
   };
   sessionToken: string;
 };
@@ -27,7 +29,12 @@ export async function verifyTelegramInitData(initData: string): Promise<AuthVeri
     throw new Error(payload?.error ?? `Auth verify failed: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  if (data.user) {
+    if (data.user.acceptedMasterTerms) localStorage.setItem('teftef_user_acceptedTerms', 'true');
+    if (data.user.nationalId) localStorage.setItem('teftef_user_nationalId', data.user.nationalId);
+  }
+  return data;
 }
 
 export async function updateMasterConsent(accepted: boolean) {
@@ -47,6 +54,7 @@ export async function updateMasterConsent(accepted: boolean) {
   }
 
   const data = await response.json();
+  if (accepted) localStorage.setItem('teftef_user_acceptedTerms', 'true');
   if (data.sessionToken) {
     setSessionToken(data.sessionToken);
   }
@@ -74,6 +82,9 @@ export async function updateUserProfile(data: {
   }
 
   const resData = await response.json();
+  if (data.acceptedMasterTerms) localStorage.setItem('teftef_user_acceptedTerms', 'true');
+  if (data.nationalId) localStorage.setItem('teftef_user_nationalId', data.nationalId);
+  
   if (resData.sessionToken) {
     setSessionToken(resData.sessionToken);
   }

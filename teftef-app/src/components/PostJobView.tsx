@@ -19,7 +19,7 @@ type DraftData = {
 };
 
 export function PostJobView({ onBack }: { onBack: () => void }) {
-  const { data: user } = useUser();
+  const { data: user, isLoading: authLoading } = useUser();
   const isMounted = useRef(true);
   const queryClient = useQueryClient();
 
@@ -44,7 +44,9 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
   const [draftSaved, setDraftSaved] = useState(false);
 
   // Tier detection
-  const isVerifiedUser = user?.acceptedMasterTerms === true && user?.nationalId != null;
+  const hasAcceptedTerms = user?.acceptedMasterTerms || localStorage.getItem('teftef_user_acceptedTerms') === 'true';
+  const hasVerifiedId = !!(user?.nationalId || localStorage.getItem('teftef_user_nationalId'));
+  const isVerifiedUser = hasAcceptedTerms && hasVerifiedId;
 
   useEffect(() => {
     isMounted.current = true;
@@ -121,6 +123,8 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
       }
     }
   }
+
+  if (authLoading) return <div className="p-4 text-xs text-slate-500 font-mono">Verifying authorization profile...</div>;
 
   return (
     <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -214,25 +218,15 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
 
             <div className="space-y-4">
               <MicroConsentBanner />
-              <div className="flex gap-4">
-                <button 
-                  type="button" 
-                  onClick={() => setCurrentStep(1)}
-                  className="px-6 py-3 text-sm font-semibold text-slate-700 bg-slate-100 rounded-full hover:bg-slate-200 transition"
-                >
-                  Back
-                </button>
-                <div className="flex-1">
-                  <AccountabilityWall
-                    accepted={legalAccepted}
-                    onToggle={setLegalAccepted}
-                    buttonLabel="Accept Terms & Post Job"
-                    disabled={!isIdentityValid}
-                    isSubmitting={status === 'submitting'}
-                    onSubmit={handleSubmit}
-                  />
-                </div>
-              </div>
+              <AccountabilityWall
+                accepted={legalAccepted}
+                onToggle={setLegalAccepted}
+                buttonLabel="Accept Terms & Post Job"
+                disabled={!isIdentityValid}
+                isSubmitting={status === 'submitting'}
+                onSubmit={handleSubmit}
+                onBack={() => setCurrentStep(1)}
+              />
             </div>
           </div>
         )}

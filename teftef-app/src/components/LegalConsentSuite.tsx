@@ -15,6 +15,7 @@ interface AccountabilityWallProps {
   disabled?: boolean;
   isSubmitting?: boolean;
   onSubmit?: () => void;
+  onBack?: () => void;
 }
 
 /**
@@ -89,6 +90,7 @@ export const AccountabilityWall = ({
   disabled = false,
   isSubmitting = false,
   onSubmit,
+  onBack,
 }: AccountabilityWallProps) => {
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -105,14 +107,25 @@ export const AccountabilityWall = ({
       </label>
 
       {onSubmit && (
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={!accepted || disabled || isSubmitting}
-          className="w-full rounded-full bg-slate-900 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isSubmitting ? 'Processing...' : buttonLabel}
-        </button>
+        <div className="flex gap-4">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-6 py-3 text-sm font-semibold text-slate-700 bg-slate-200 rounded-full hover:bg-slate-300 transition"
+            >
+              Back
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={!accepted || disabled || isSubmitting}
+            className="flex-1 rounded-full bg-slate-900 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? 'Processing...' : buttonLabel}
+          </button>
+        </div>
       )}
     </div>
   );

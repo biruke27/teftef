@@ -11,7 +11,7 @@ interface ProposalFormProps {
 }
 
 export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
-  const { data: user } = useUser();
+  const { data: user, isLoading: authLoading } = useUser();
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -25,7 +25,9 @@ export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Tier detection
-  const isVerifiedUser = user?.acceptedMasterTerms === true && user?.nationalId != null;
+  const hasAcceptedTerms = user?.acceptedMasterTerms || localStorage.getItem('teftef_user_acceptedTerms') === 'true';
+  const hasVerifiedId = !!(user?.nationalId || localStorage.getItem('teftef_user_nationalId'));
+  const isVerifiedUser = hasAcceptedTerms && hasVerifiedId;
 
   useEffect(() => {
     const fetchDraft = async () => {
@@ -62,6 +64,8 @@ export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
       setIsSubmitting(false);
     }
   };
+
+  if (authLoading) return <div className="p-4 text-xs text-slate-500 font-mono">Verifying authorization profile...</div>;
 
   return (
     <div className="space-y-4">
@@ -101,21 +105,15 @@ export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
 
       <div className="space-y-4">
         <MicroConsentBanner />
-        <div className="flex gap-4">
-          <button type="button" onClick={onCancel} className="px-6 py-3 text-sm font-semibold text-slate-700 bg-slate-100 rounded-full hover:bg-slate-200 transition">
-            Cancel
-          </button>
-          <div className="flex-1">
-            <AccountabilityWall
-              accepted={legalAccepted}
-              onToggle={setLegalAccepted}
-              buttonLabel={!isVerifiedUser ? 'Accept Terms & Submit Bid' : 'Submit Bid'}
-              disabled={!isValidProposal || (!isVerifiedUser && (!isIdentityValid || !consentChecked))}
-              isSubmitting={isSubmitting}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        </div>
+        <AccountabilityWall
+          accepted={legalAccepted}
+          onToggle={setLegalAccepted}
+          buttonLabel={!isVerifiedUser ? 'Accept Terms & Submit Bid' : 'Submit Bid'}
+          disabled={!isValidProposal || (!isVerifiedUser && (!isIdentityValid || !consentChecked))}
+          isSubmitting={isSubmitting}
+          onSubmit={handleSubmit}
+          onBack={onCancel}
+        />
       </div>
     </div>
   );
