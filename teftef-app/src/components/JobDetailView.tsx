@@ -6,6 +6,7 @@ import { DealActions } from './DealActions';
 import { PayBadgeRenderer } from './PayBadgeRenderer';
 import { useUser } from '../hooks/useUser';
 import { useJobProposals, useUpdateProposal } from '../hooks/useJob';
+import { setSessionToken } from '../lib/session';
 
 interface JobDetailViewProps {
   jobId: string;
@@ -47,10 +48,16 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
   const handleSubmit = async (amount: number, message: string, verification?: { fullName: string; nationalId: string; acceptedMasterTerms: boolean }) => {
     setSubmitError(null);
     try {
-      await submitProposal({ jobId, amount, message, ...verification });
+      const response = await submitProposal({ jobId, amount, message, ...verification });
+      if (response?.token) {
+        setSessionToken(response.token);
+      }
       setSubmitted(true);
       setShowForm(false);
       await queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      await queryClient.invalidateQueries({ queryKey: ['user'] });
+      await queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      return response;
     } catch (err) {
       const msg = (err as Error)?.message ?? 'Submission failed';
       if (msg.includes('409') || msg.toLowerCase().includes('duplicate')) {
@@ -343,7 +350,7 @@ export function JobDetailView({ jobId, onBack }: JobDetailViewProps) {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto scrolling-touch rounded-t-3xl sm:rounded-3xl bg-white p-6 shadow-2xl">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">Submit Proposal</h2>
             <ProposalForm
               jobId={jobId}

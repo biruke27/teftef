@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma.js';
-import { getTrustTier } from '../utils.js';
+import { getTrustTier, signJwt } from '../utils.js';
 import { getAuthPayload } from '../middleware/auth.js';
 
 export async function registerProposalRoutes(app: FastifyInstance, jwtSecret: string) {
@@ -67,20 +67,42 @@ export async function registerProposalRoutes(app: FastifyInstance, jwtSecret: st
       if (body.fullName && !freelancer.fullName) profileUpdate.fullName = body.fullName.trim();
       if (body.nationalId && !freelancer.nationalId) profileUpdate.nationalId = body.nationalId.trim();
       if (body.acceptedMasterTerms && !freelancer.acceptedMasterTerms) profileUpdate.acceptedMasterTerms = true;
-      if (Object.keys(profileUpdate).length > 0) {
-        await prisma.user.update({ where: { id: freelancer.id }, data: profileUpdate });
-      }
 
-      const proposal = await prisma.proposal.create({
-        data: {
-          jobId,
-          freelancerId: freelancer.id,
-          amount,
-          message,
-        },
+      const result = await prisma.$transaction(async (tx) => {
+        if (Object.keys(profileUpdate).length > 0) {
+          await tx.user.update({ where: { id: freelancer.id }, data: profileUpdate });
+        }
+
+        const proposal = await tx.proposal.create({
+          data: {
+            jobId,
+            freelancerId: freelancer.id,
+            amount,
+            message,
+          },
+        });
+
+        return proposal;
       });
 
-      return reply.status(201).send({ proposal });
+      const proposal = result;
+      let token;
+      if (Object.keys(profileUpdate).length > 0) {
+        const updatedUser = await prisma.user.findUnique({ where: { id: freelancer.id } });
+        if (updatedUser) {
+          token = signJwt({
+            userId: updatedUser.id,
+            telegramId: updatedUser.telegramId,
+            exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24h
+          }, jwtSecret);
+        }
+      }
+
+      return reply.status(201).send({
+        success: true,
+        token: token ?? undefined,
+        data: proposal,
+      });
     } catch (error: unknown) {
       const prismaError = error as { code?: string };
       if (prismaError.code === 'P2002') {

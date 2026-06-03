@@ -3,11 +3,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { saveDraft, loadDraft, clearDraft } from '../lib/draftStorage';
 import { useUser } from '../hooks/useUser';
 import { MasterConsentGateway, MicroConsentBanner, AccountabilityWall } from './LegalConsentSuite';
+import { setSessionToken } from '../lib/session';
 
 interface ProposalFormProps {
   jobId: string;
   onCancel: () => void;
-  onSubmit: (amount: number, message: string, verification?: { fullName: string; nationalId: string; acceptedMasterTerms: boolean }) => Promise<void>;
+  onSubmit: (amount: number, message: string, verification?: { fullName: string; nationalId: string; acceptedMasterTerms: boolean }) => Promise<any>;
 }
 
 export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
@@ -50,13 +51,17 @@ export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onSubmit(
+      const response = await onSubmit(
         Number(amount),
         message,
         !isVerifiedUser ? { fullName: fullName.trim(), nationalId: nationalId.trim(), acceptedMasterTerms: true } : undefined
       );
+      if (response?.token) {
+        setSessionToken(response.token);
+      }
       await clearDraft(`proposal-${jobId}`);
       await queryClient.invalidateQueries({ queryKey: ['user'] });
+      await queryClient.invalidateQueries({ queryKey: ['proposals'] });
       onCancel();
     } catch (error) {
       console.error('[PROPOSAL-GATE] Submission error:', error);
