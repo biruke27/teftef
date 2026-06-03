@@ -30,10 +30,6 @@ export async function registerProposalRoutes(app: FastifyInstance, jwtSecret: st
       return reply.status(400).send({ error: 'jobId is required' });
     }
 
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return reply.status(400).send({ error: 'Amount must be greater than 0.' });
-    }
-
     if (message.length < 20 || message.length > 500) {
       return reply.status(400).send({ error: 'Message must be between 20 and 500 characters.' });
     }

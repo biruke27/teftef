@@ -14,9 +14,8 @@ interface ProposalFormProps {
 export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
   const { data: user, isLoading: authLoading } = useUser();
   const queryClient = useQueryClient();
-  const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
-  
+
   // Identity state
   const [fullName, setFullName] = useState('');
   const [nationalId, setNationalId] = useState('');
@@ -32,27 +31,27 @@ export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
 
   useEffect(() => {
     const fetchDraft = async () => {
-      const draft = await loadDraft<{ amount: string; message: string }>(`proposal-${jobId}`);
-      if (draft) { setAmount(draft.amount); setMessage(draft.message); }
+      const draft = await loadDraft<{ message: string }>(`proposal-${jobId}`);
+      if (draft) { setMessage(draft.message); }
     };
     fetchDraft();
   }, [jobId]);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
-      await saveDraft(`proposal-${jobId}`, { amount, message });
+      await saveDraft(`proposal-${jobId}`, { message });
     }, 500);
     return () => clearTimeout(timer);
-  }, [jobId, amount, message]);
+  }, [jobId, message]);
 
-  const isValidProposal = amount && Number(amount) > 0 && message.length >= 20;
+  const isValidProposal = message.length >= 20;
   const isIdentityValid = fullName.trim().length > 2 && nationalId.trim().length > 5;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       const response = await onSubmit(
-        Number(amount),
+        0,
         message,
         !isVerifiedUser ? { fullName: fullName.trim(), nationalId: nationalId.trim(), acceptedMasterTerms: true } : undefined
       );
@@ -76,12 +75,8 @@ export function ProposalForm({ jobId, onCancel, onSubmit }: ProposalFormProps) {
     <div className="space-y-4">
       <div className="space-y-4 animate-in fade-in duration-200">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700">Proposed Amount (ETB)</label>
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 5000" className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-slate-900 outline-none" required />
-        </div>
-        <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700">Your Proposal</label>
-          <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Describe your experience... (min 20 chars)" className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-slate-900 outline-none h-32 resize-none" required />
+          <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Describe your experience and expected pay..." className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-slate-900 outline-none h-32 resize-none" required />
           <p className={`text-xs ${message.length >= 20 ? 'text-green-600' : 'text-slate-400'}`}>{message.length} / 500 characters</p>
         </div>
       </div>
