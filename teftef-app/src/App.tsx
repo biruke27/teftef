@@ -94,7 +94,7 @@ function App() {
                   ? 'Review the full job description and submit your proposal.'
                   : isPostView
                     ? 'Tell freelancers and job seekers what you need, and your draft will be saved automatically as you type.'
-                    : 'Browse active freelance contracts and full-time jobs posted by Ethiopian businesses..'}
+                    : 'Browse active freelance contracts and full-time jobs posted by Ethiopian businesses.'}
               </p>
             </div>
             <div className="flex flex-wrap gap-3 rounded-3xl bg-slate-50 p-4 shadow-inner">

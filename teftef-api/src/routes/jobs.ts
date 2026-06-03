@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma.js';
-import { getTrustTier, getPostedLabel } from '../utils.js';
+import { getTrustTier, getPostedLabel, signJwt } from '../utils.js';
 import { getAuthPayload } from '../middleware/auth.js';
 
 export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string) {
@@ -278,24 +278,48 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       const profileUpdate: Record<string, string | boolean> = {};
       if (body.fullName && !client.fullName) profileUpdate.fullName = body.fullName.trim();
       if (body.nationalId && !client.nationalId) profileUpdate.nationalId = body.nationalId.trim();
+      let updatedClient = client;
+      let sessionToken: string | undefined;
+
+      const result = await prisma.$transaction(async (tx) => {
+        if (Object.keys(profileUpdate).length > 0) {
+          profileUpdate.acceptedMasterTerms = true;
+          updatedClient = await tx.user.update({ where: { id: client.id }, data: profileUpdate });
+        }
+
+        const job = await tx.job.create({
+          data: {
+            title,
+            description,
+            budget,
+            listingType,
+            payType,
+            minPay,
+            maxPay,
+            clientId: client.id,
+          },
+        });
+        
+        return { job, updatedClient };
+      });
+
       if (Object.keys(profileUpdate).length > 0) {
-        profileUpdate.acceptedMasterTerms = true;
-        await prisma.user.update({ where: { id: client.id }, data: profileUpdate });
+        sessionToken = signJwt(
+          {
+            userId: result.updatedClient.id,
+            telegramId: result.updatedClient.telegramId,
+            username: result.updatedClient.username ?? null,
+            nationalId: result.updatedClient.nationalId ?? null,
+            fullName: result.updatedClient.fullName ?? null,
+            acceptedMasterTerms: result.updatedClient.acceptedMasterTerms,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+          },
+          jwtSecret
+        );
       }
 
-      const job = await prisma.job.create({
-        data: {
-          title,
-          description,
-          budget,
-          listingType,
-          payType,
-          minPay,
-          maxPay,
-          clientId: client.id,
-        },
-      });
-      return reply.status(201).send({ job });
+      return reply.status(201).send({ success: true, token: sessionToken, data: result.job, job: result.job });
     } catch (createErr) {
       console.error('[Production API Error] Failed to write Job entry into Prisma:', createErr);
       return reply.status(500).send({ error: 'Internal Server Error while inserting job record.' });

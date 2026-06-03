@@ -6,6 +6,7 @@ import { useUser } from '../hooks/useUser';
 import { JobTypeSelector, type ListingType } from './JobTypeSelector';
 import { PolymorphicPricingController } from './PolymorphicPricingController';
 import { MasterConsentGateway, MicroConsentBanner, AccountabilityWall } from './LegalConsentSuite';
+import { setSessionToken } from '../lib/session';
 
 const DRAFT_KEY = 'post-job';
 
@@ -93,7 +94,7 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
     setMessage('');
 
     try {
-      await createJob({
+      const response = await createJob({
         title,
         description,
         budget: minPay ?? 0,
@@ -106,6 +107,10 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
           nationalId: nationalId.trim()
         })
       } as any);
+      
+      if (response?.token) {
+        setSessionToken(response.token);
+      }
       
       await clearDraft(DRAFT_KEY);
       await queryClient.invalidateQueries({ queryKey: ['jobs'] });
