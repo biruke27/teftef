@@ -59,7 +59,7 @@ export function JobFeedView({ onJobClick, authReady }: JobFeedViewProps) {
       {jobs.length === 0 ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
           <p className="font-semibold text-slate-900">No jobs available right now.</p>
-          <p className="mt-2">Check back soon or refresh the app to see the latest opportunities.</p>
+          <p className="mt-2">Check back soon to see the latest opportunities.</p>
         </div>
       ) : (
         <section className="grid gap-4 lg:grid-cols-2">

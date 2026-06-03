@@ -87,14 +87,14 @@ function App() {
                 {isDetailView ? 'Job Details' : isPostView ? 'Post a Job' : 'Find Work'}
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-                Hello, {name}! 👋
+                Hello, {name}! 
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 {isDetailView
                   ? 'Review the full job description and submit your proposal.'
                   : isPostView
-                    ? 'Tell freelancers what you need and save your draft automatically while you type.'
-                    : 'Browse active jobs posted by Ethiopian businesses. This is your first glance at the TefTef job feed.'}
+                    ? 'Tell freelancers and job seekers what you need, and your draft will be saved automatically as you type.'
+                    : 'Browse active freelance contracts and full-time jobs posted by Ethiopian businesses..'}
               </p>
             </div>
             <div className="flex flex-wrap gap-3 rounded-3xl bg-slate-50 p-4 shadow-inner">

@@ -193,31 +193,14 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
 
     const title = body.title?.trim() ?? '';
     const description = body.description?.trim() ?? '';
-    const budget = Number(body.budget ?? 0);
     const listingType = body.listingType === 'FULL_TIME' ? 'FULL_TIME' : 'FREELANCE';
-    const payType = body.payType === 'RANGE' || body.payType === 'NEGOTIABLE' ? body.payType : 'FIXED';
-    const rawMinPay = body.minPay;
-    const rawMaxPay = body.maxPay;
 
-    let minPay: number | null = null;
-    let maxPay: number | null = null;
-
-    if (payType === 'FIXED') {
-      minPay = budget;
-      maxPay = null;
-    }
-
-    if (payType === 'RANGE') {
-      const safeMinPay = Number(rawMinPay ?? NaN);
-      const safeMaxPay = Number(rawMaxPay ?? NaN);
-      minPay = Number.isFinite(safeMinPay) ? safeMinPay : null;
-      maxPay = Number.isFinite(safeMaxPay) ? safeMaxPay : null;
-    }
-
-    if (payType === 'NEGOTIABLE') {
-      minPay = null;
-      maxPay = null;
-    }
+    // 1. Hardened Numeric Inputs
+    const parsedBudget = Math.round(Number(body.budget)) || 0;
+    const parsedMinPay = Math.round(Number(body.minPay)) || 0;
+    const parsedMaxPay = body.maxPay !== undefined && body.maxPay !== null
+      ? Math.round(Number(body.maxPay))
+      : null;
 
     if (title.length < 5) {
       return reply.status(400).send({ error: 'Title must be at least 5 characters.' });
@@ -227,18 +210,40 @@ export async function registerJobRoutes(app: FastifyInstance, jwtSecret: string)
       return reply.status(400).send({ error: 'Description is required.' });
     }
 
-    if (!Number.isFinite(budget) || budget <= 0) {
-      return reply.status(400).send({ error: 'Budget must be greater than 0.' });
-    }
+    // 2. PayType Conditional Validation Rules
+    let budget: number;
+    let minPay: number | null = null;
+    let maxPay: number | null = null;
 
-    if (payType === 'RANGE') {
-      if (minPay === null || maxPay === null || !Number.isFinite(minPay) || !Number.isFinite(maxPay) || minPay <= 0 || maxPay <= 0 || minPay > maxPay) {
-        return reply.status(400).send({ error: 'Range pay requires valid minPay and maxPay values.' });
+    const payType = body.payType;
+
+    if (payType === 'FIXED') {
+      if (!Number.isFinite(parsedBudget) || parsedBudget <= 0) {
+        return reply.status(400).send({ error: 'Budget must be greater than 0 for fixed-price jobs.' });
       }
-    }
-
-    if (payType === 'FIXED' && !Number.isFinite(minPay)) {
-      return reply.status(400).send({ error: 'Fixed pay requires a valid amount.' });
+      budget = parsedBudget;
+      minPay = parsedBudget;
+      maxPay = null;
+    } else if (payType === 'RANGE') {
+      if (
+        !Number.isFinite(parsedMinPay) ||
+        parsedMinPay <= 0 ||
+        parsedMaxPay === null ||
+        !Number.isFinite(parsedMaxPay) ||
+        parsedMaxPay <= 0 ||
+        parsedMinPay > parsedMaxPay
+      ) {
+        return reply.status(400).send({ error: 'Invalid range: minPay must be less than or equal to maxPay and both must be greater than 0.' });
+      }
+      budget = parsedMinPay;
+      minPay = parsedMinPay;
+      maxPay = parsedMaxPay;
+    } else if (payType === 'NEGOTIABLE') {
+      budget = 0;
+      minPay = null;
+      maxPay = null;
+    } else {
+      return reply.status(400).send({ error: 'Invalid or missing payType. Must be FIXED, RANGE, or NEGOTIABLE.' });
     }
 
     const userId = authPayload.userId as string | undefined;

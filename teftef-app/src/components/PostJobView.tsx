@@ -164,11 +164,11 @@ export function PostJobView({ onBack }: { onBack: () => void }) {
           <div className="p-5 bg-slate-50 border-l-4 border-blue-600 rounded-r-2xl space-y-4 animate-in fade-in duration-300">
             <div>
               <h4 className="text-sm font-bold text-slate-800">Identity Details Required</h4>
-              <p className="text-xs text-slate-500">TefTef requires a verified name and digital identification to open escrow parameters for your very first post.</p>
+              <p className="text-xs text-slate-500">TefTef requires a verified name and digital identification to open written agreement for your very first post.</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full Legal Name" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500" />
-              <input type="text" required value={nationalId} onChange={(e) => setNationalId(e.target.value)} placeholder="National ID / Digital ID String" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500" />
+              <input type="text" required value={nationalId} onChange={(e) => setNationalId(e.target.value)} placeholder="National ID / Fayda Alias Number" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-blue-500" />
             </div>
           </div>
         )}
